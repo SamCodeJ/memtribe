@@ -1,0 +1,29 @@
+```yaml
+services:
+  - type: web
+    name: memtribe-api
+    runtime: node
+    region: oregon  # or your preferred region
+    plan: free
+    buildCommand: npm install && npx prisma generate
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: memtribe-db
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PORT
+        value: 10000
+    healthCheckPath: /health
+
+databases:
+  - name: memtribe-db
+    databaseName: memtribe
+    user: memtribe
+    plan: free
+    region: oregon
+```

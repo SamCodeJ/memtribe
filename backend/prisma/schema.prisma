@@ -1,0 +1,170 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Model
+model User {
+  id                String   @id @default(uuid())
+  email             String   @unique
+  password          String
+  full_name         String
+  role              String   @default("user") // user, admin
+  subscription_plan String   @default("starter") // starter, pro, business, enterprise
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+
+  // Relations
+  events Event[]
+  
+  @@map("users")
+}
+
+// Event Model
+model Event {
+  id                    String    @id @default(uuid())
+  title                 String
+  description           String?   @db.Text
+  start_date            DateTime
+  end_date              DateTime?
+  location              String
+  event_type            String    @default("public") // public, private, invite_only
+  max_attendees         Int?
+  event_image           String?
+  registration_required Boolean   @default(true)
+  allowed_emails        String[]  @default([])
+  organizer_id          String
+  status                String    @default("draft") // draft, published, cancelled, completed
+  qr_code               String?
+  created_date          DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+
+  // Relations
+  organizer User   @relation(fields: [organizer_id], references: [id], onDelete: Cascade)
+  rsvps     RSVP[]
+  media     Media[]
+
+  @@index([organizer_id])
+  @@index([status])
+  @@index([event_type])
+  @@map("events")
+}
+
+// RSVP Model
+model RSVP {
+  id           String   @id @default(uuid())
+  event_id     String
+  guest_name   String
+  guest_email  String
+  guest_phone  String?
+  status       String   @default("attending") // attending, maybe, not_attending
+  guest_count  Int      @default(1)
+  notes        String?  @db.Text
+  checked_in   Boolean  @default(false)
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  // Relations
+  event Event @relation(fields: [event_id], references: [id], onDelete: Cascade)
+
+  @@index([event_id])
+  @@index([guest_email])
+  @@map("rsvps")
+}
+
+// Media Model
+model Media {
+  id              String   @id @default(uuid())
+  event_id        String
+  file_url        String
+  file_type       String // image, video
+  uploaded_by     String? // guest name
+  uploader_email  String?
+  moderation_status String @default("pending") // pending, approved, rejected
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  // Relations
+  event Event @relation(fields: [event_id], references: [id], onDelete: Cascade)
+
+  @@index([event_id])
+  @@index([moderation_status])
+  @@map("media")
+}
+
+// System Settings Model
+model SystemSettings {
+  id    String @id @default(uuid())
+  key   String @unique
+  value String @db.Text
+  
+  @@map("system_settings")
+}
+
+// Feature Model (for subscription features)
+model Feature {
+  id           String   @id @default(uuid())
+  feature_name String
+  display_name String?
+  feature_key  String   @unique
+  feature_type String // limit, boolean, access
+  description  String?  @db.Text
+  default_value String?
+  category     String   @default("events")
+  is_active    Boolean  @default(true)
+  created_at   DateTime @default(now())
+
+  // Relations
+  package_features PackageFeature[]
+
+  @@map("features")
+}
+
+// Package Model (subscription plans)
+model Package {
+  id            String   @id @default(uuid())
+  package_name  String
+  package_slug  String   @unique
+  price         Decimal  @db.Decimal(10, 2)
+  monthly_price Decimal  @default(0) @db.Decimal(10, 2)
+  yearly_price  Decimal  @default(0) @db.Decimal(10, 2)
+  billing_cycle String?  @default("monthly") // monthly, yearly
+  description   String?  @db.Text
+  is_popular    Boolean  @default(false)
+  display_order Int      @default(0)
+  color_scheme  String   @default("blue")
+  is_active     Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  // Relations
+  package_features PackageFeature[]
+
+  @@map("packages")
+}
+
+// PackageFeature Model (junction table with feature values)
+model PackageFeature {
+  id            String  @id @default(uuid())
+  package_id    String
+  feature_id    String
+  feature_value String
+  is_unlimited  Boolean @default(false)
+
+  // Relations
+  package Package @relation(fields: [package_id], references: [id], onDelete: Cascade)
+  feature Feature @relation(fields: [feature_id], references: [id], onDelete: Cascade)
+
+  @@unique([package_id, feature_id])
+  @@index([package_id])
+  @@index([feature_id])
+  @@map("package_features")
+}
+
