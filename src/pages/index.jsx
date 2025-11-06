@@ -68,6 +68,10 @@ const PAGES = {
     
     PricingManagement: PricingManagement,
     
+    Login: Login,
+    
+    Signup: Signup,
+    
 }
 
 function _getCurrentPage(url) {

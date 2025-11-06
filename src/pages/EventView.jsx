@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Calendar,
   MapPin,
@@ -17,7 +18,9 @@ import {
   User as UserIcon,
   Mail,
   Phone,
-  ImageIcon // Added ImageIcon for media upload section
+  ImageIcon,
+  AlertCircle,
+  XCircle
 } from "lucide-react";
 
 // Simple utility to create a page URL based on a base path and parameters.
@@ -35,6 +38,8 @@ export default function EventView() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [rsvpSubmitted, setRsvpSubmitted] = useState(false);
+  const [rsvpResponse, setRsvpResponse] = useState(null); // Store the full RSVP response
+  const [rsvpError, setRsvpError] = useState(null); // Store error details
   const [emailNotAllowed, setEmailNotAllowed] = useState(false); // New state for invite-only email check
   const [rsvpData, setRsvpData] = useState({
     guest_name: "",
@@ -88,33 +93,87 @@ export default function EventView() {
   };
 
   const handleRSVPSubmit = async () => {
+    // Reset previous error/success states
+    setRsvpError(null);
+    setRsvpResponse(null);
+    
+    // Validation
     if (!rsvpData.guest_name || !rsvpData.guest_email) {
-      alert("Please fill in your name and email");
+      setRsvpError({
+        title: "Missing Required Information",
+        message: "Please fill in your name and email address to continue with your RSVP."
+      });
       return;
     }
 
     // Check if email is allowed for invite-only events
     if (event.event_type === 'invite_only' && !checkEmailAllowed(rsvpData.guest_email)) {
       setEmailNotAllowed(true);
-      alert("Sorry, your email is not on the guest list for this invite-only event.");
+      setRsvpError({
+        title: "Email Not Authorized",
+        message: "Your email address is not on the guest list for this invite-only event. Please use the email address you were invited with, or contact the event organizer for assistance."
+      });
       return;
     }
 
     setEmailNotAllowed(false); // Reset error state if check passes
     setIsSubmitting(true);
+    
     try {
-      await RSVP.create({
+      const response = await RSVP.create({
         ...rsvpData,
         event_id: event.id
       });
+      
+      // Success!
+      setRsvpResponse(response);
       setRsvpSubmitted(true);
+      setRsvpError(null);
+      
+      // Scroll to success message
+      setTimeout(() => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+      }, 100);
+      
     } catch (error) {
       console.error("Error submitting RSVP:", error);
-      // Show more detailed error message
-      const errorMessage = error.message || "Failed to submit RSVP. Please try again.";
-      alert(`Failed to submit RSVP: ${errorMessage}\n\nPlease check the console for more details.`);
+      
+      // Parse error message to provide specific feedback
+      const errorMessage = error.message || "An unexpected error occurred";
+      
+      let errorTitle = "RSVP Submission Failed";
+      let errorDetails = errorMessage;
+      
+      // Categorize common errors
+      if (errorMessage.toLowerCase().includes("already rsvp")) {
+        errorTitle = "Duplicate RSVP";
+        errorDetails = "You have already submitted an RSVP for this event. If you need to update your response, please contact the event organizer.";
+      } else if (errorMessage.toLowerCase().includes("not authorized") || errorMessage.toLowerCase().includes("not on the guest list")) {
+        errorTitle = "Email Not Authorized";
+        errorDetails = "Your email address is not on the guest list for this invite-only event.";
+      } else if (errorMessage.toLowerCase().includes("event not found")) {
+        errorTitle = "Event Not Found";
+        errorDetails = "This event no longer exists or has been removed.";
+      } else if (errorMessage.toLowerCase().includes("cannot connect") || errorMessage.toLowerCase().includes("network")) {
+        errorTitle = "Connection Error";
+        errorDetails = "Unable to connect to the server. Please check your internet connection and try again.";
+      }
+      
+      setRsvpError({
+        title: errorTitle,
+        message: errorDetails
+      });
+      
+      // Scroll to error message
+      setTimeout(() => {
+        const errorElement = document.getElementById('rsvp-error');
+        if (errorElement) {
+          errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    } finally {
+      setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
   const handleInputChange = (field, value) => {
@@ -122,6 +181,11 @@ export default function EventView() {
       ...prev,
       [field]: value
     }));
+    
+    // Clear errors when user starts typing
+    if (rsvpError) {
+      setRsvpError(null);
+    }
     
     // Reset email error when user changes email input
     if (field === 'guest_email') {
@@ -268,7 +332,18 @@ export default function EventView() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {emailNotAllowed && (
+              {/* Error Message Display */}
+              {rsvpError && (
+                <Alert id="rsvp-error" variant="destructive" className="border-red-300 bg-red-50">
+                  <XCircle className="h-5 w-5" />
+                  <AlertTitle className="font-semibold text-lg">{rsvpError.title}</AlertTitle>
+                  <AlertDescription className="mt-2 text-sm">
+                    {rsvpError.message}
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              {emailNotAllowed && !rsvpError && (
                 <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
                   <p className="text-red-800 text-sm">
                     ⚠️ Your email address is not authorized for this invite-only event.
@@ -398,15 +473,100 @@ export default function EventView() {
 
         {/* Success Message */}
         {rsvpSubmitted && (
-          <Card className="border-0 shadow-lg bg-green-50 border-green-200 mt-6">
-            <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <CheckCircle2 className="w-8 h-8 text-white" />
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-green-50 to-emerald-50 border-green-200 mt-6">
+            <CardContent className="p-8">
+              <div className="text-center mb-6">
+                <div className="w-20 h-20 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <CheckCircle2 className="w-10 h-10 text-white" />
+                </div>
+                <h3 className="text-3xl font-bold text-green-900 mb-3">RSVP Submitted Successfully!</h3>
+                <p className="text-green-700 text-lg">
+                  Thank you for your response. Your RSVP has been confirmed.
+                </p>
               </div>
-              <h3 className="text-2xl font-bold text-green-900 mb-2">RSVP Confirmed!</h3>
-              <p className="text-green-700">
-                Thank you for your response. We've received your RSVP and will send you updates about the event.
-              </p>
+
+              {/* RSVP Details Summary */}
+              {rsvpResponse && (
+                <div className="bg-white rounded-lg p-6 shadow-md border border-green-200 space-y-4">
+                  <h4 className="font-semibold text-slate-900 text-lg mb-4 flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                    Your RSVP Details
+                  </h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="flex items-start gap-3">
+                      <UserIcon className="w-5 h-5 text-slate-500 mt-0.5" />
+                      <div>
+                        <p className="text-sm text-slate-500">Guest Name</p>
+                        <p className="font-medium text-slate-900">{rsvpResponse.guest_name}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-3">
+                      <Mail className="w-5 h-5 text-slate-500 mt-0.5" />
+                      <div>
+                        <p className="text-sm text-slate-500">Email</p>
+                        <p className="font-medium text-slate-900">{rsvpResponse.guest_email}</p>
+                      </div>
+                    </div>
+                    
+                    {rsvpResponse.guest_phone && (
+                      <div className="flex items-start gap-3">
+                        <Phone className="w-5 h-5 text-slate-500 mt-0.5" />
+                        <div>
+                          <p className="text-sm text-slate-500">Phone</p>
+                          <p className="font-medium text-slate-900">{rsvpResponse.guest_phone}</p>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-start gap-3">
+                      <Users className="w-5 h-5 text-slate-500 mt-0.5" />
+                      <div>
+                        <p className="text-sm text-slate-500">Number of Guests</p>
+                        <p className="font-medium text-slate-900">{rsvpResponse.guest_count}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-start gap-3">
+                      <CheckCircle2 className="w-5 h-5 text-slate-500 mt-0.5" />
+                      <div>
+                        <p className="text-sm text-slate-500">Response</p>
+                        <Badge className={`mt-1 ${
+                          rsvpResponse.status === 'attending' ? 'bg-green-600' :
+                          rsvpResponse.status === 'maybe' ? 'bg-yellow-600' :
+                          'bg-red-600'
+                        }`}>
+                          {rsvpResponse.status === 'attending' ? "I'll be there" :
+                           rsvpResponse.status === 'maybe' ? "Maybe" :
+                           "Can't make it"}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+
+                  {rsvpResponse.notes && (
+                    <div className="pt-4 border-t border-slate-200">
+                      <p className="text-sm text-slate-500 mb-1">Additional Notes</p>
+                      <p className="text-slate-700 italic">{rsvpResponse.notes}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-blue-800">
+                    <p className="font-medium mb-1">What's Next?</p>
+                    <ul className="list-disc list-inside space-y-1 text-blue-700">
+                      <li>A confirmation email has been sent to your email address</li>
+                      <li>You'll receive updates and reminders about the event</li>
+                      <li>If you need to change your RSVP, please contact the event organizer</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         )}

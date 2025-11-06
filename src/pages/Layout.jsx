@@ -140,7 +140,7 @@ export default function Layout({ children, currentPageName }) {
     );
   }
 
-  if (!currentUser && currentPageName !== "Landing" && currentPageName !== "EventView" && currentPageName !== "Login") {
+  if (!currentUser && currentPageName !== "Landing" && currentPageName !== "EventView" && currentPageName !== "Login" && currentPageName !== "Signup" && currentPageName !== "MediaUpload" && currentPageName !== "EventSlideshow") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-8">
@@ -148,8 +148,14 @@ export default function Layout({ children, currentPageName }) {
           <h2 className="text-2xl font-bold mb-4">Access Restricted</h2>
           <p className="text-gray-600 mb-6">Please log in to access MemTribe's event management features</p>
           <div className="flex flex-col gap-3">
-            <Button onClick={() => User.login()} className="bg-amber-600 hover:bg-amber-700">
-              Login with Google
+            <Button onClick={() => navigate(createPageUrl("Login"))} className="bg-amber-600 hover:bg-amber-700">
+              Sign In
+            </Button>
+            <Button 
+              onClick={() => navigate(createPageUrl("Signup"))}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Create Account
             </Button>
             <Button 
               variant="outline" 
@@ -164,7 +170,7 @@ export default function Layout({ children, currentPageName }) {
     );
   }
 
-  if (!currentUser || currentPageName === "Landing" || currentPageName === "EventView" || currentPageName === "Login") {
+  if (!currentUser || currentPageName === "Landing" || currentPageName === "EventView" || currentPageName === "Login" || currentPageName === "Signup" || currentPageName === "MediaUpload" || currentPageName === "EventSlideshow") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
         {children}
