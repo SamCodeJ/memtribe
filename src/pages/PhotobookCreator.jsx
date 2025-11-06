@@ -56,7 +56,7 @@ export default function PhotobookCreator() {
         setTotalApprovedMediaCount(allMedia.length);
 
         // Filter only images for photobook
-        const imageMedia = allMedia.filter(media => media.media_type === 'image');
+        const imageMedia = allMedia.filter(media => media.file_type === 'image');
         setApprovedMedia(imageMedia);
         setSelectedMedia(imageMedia.map(media => media.id)); // Select all by default
       } catch (error) {
@@ -172,9 +172,9 @@ export default function PhotobookCreator() {
             <div class="photo-grid">
               ${selectedPhotos.map(photo => `
                 <div class="photo-item">
-                  <img src="${photo.filtered_url || photo.media_url}" alt="Event memory" />
+                  <img src="${photo.filtered_url || photo.file_url}" alt="Event memory" />
                   ${photo.caption ? `<div class="photo-caption">${photo.caption}</div>` : ''}
-                  <div class="photo-meta">By ${photo.uploader_name} • ${new Date(photo.created_at).toLocaleDateString()}</div>
+                  <div class="photo-meta">By ${photo.uploaded_by || 'Guest'} • ${new Date(photo.created_at).toLocaleDateString()}</div>
                 </div>
               `).join('')}
             </div>
@@ -370,7 +370,7 @@ export default function PhotobookCreator() {
                         onClick={() => toggleMediaSelection(media.id)}
                       >
                         <img
-                          src={media.filtered_url || media.media_url}
+                          src={media.filtered_url || media.file_url}
                           alt="Event memory"
                           className="w-full h-32 object-cover"
                         />
@@ -388,7 +388,7 @@ export default function PhotobookCreator() {
                         
                         {/* Photo info */}
                         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
-                          <p className="text-white text-xs font-medium truncate">{media.uploader_name}</p>
+                          <p className="text-white text-xs font-medium truncate">{media.uploaded_by || 'Guest'}</p>
                         </div>
                       </div>
                     );

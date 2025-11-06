@@ -59,12 +59,12 @@ export default function MediaModeration() {
     setIsProcessing(prev => ({ ...prev, [media.id]: true }));
     
     try {
-      if (media.media_type === 'image') {
+      if (media.file_type === 'image') {
         const prompt = `Add elegant event branding overlay to this image. Add "${event.title}" text with sophisticated typography and subtle gold accent elements. Keep the main image visible but add premium branding elements.`;
         
         const result = await InvokeLLM({
           prompt: prompt,
-          file_urls: [media.media_url],
+          file_urls: [media.file_url],
           response_json_schema: {
             type: "object",
             properties: {
@@ -164,15 +164,15 @@ export default function MediaModeration() {
                 <Card key={media.id} className="border-0 shadow-lg">
                   <CardContent className="p-0">
                     <div className="relative">
-                      {media.media_type === 'image' ? (
+                      {media.file_type === 'image' ? (
                         <img
-                          src={media.filtered_url || media.media_url}
+                          src={media.filtered_url || media.file_url}
                           alt="Uploaded content"
                           className="w-full h-48 object-cover rounded-t-lg"
                         />
                       ) : (
                         <video
-                          src={media.media_url}
+                          src={media.file_url}
                           className="w-full h-48 object-cover rounded-t-lg"
                           controls
                         />
@@ -189,7 +189,7 @@ export default function MediaModeration() {
                       </div>
                       
                       <div className="absolute top-2 right-2">
-                        {media.media_type === 'image' ? 
+                        {media.file_type === 'image' ? 
                           <ImageIcon className="w-5 h-5 text-white bg-black/50 rounded p-1" /> :
                           <Video className="w-5 h-5 text-white bg-black/50 rounded p-1" />
                         }
@@ -199,7 +199,7 @@ export default function MediaModeration() {
                     <div className="p-4 space-y-3">
                       <div className="flex items-center gap-2 text-sm text-slate-600">
                         <User className="w-4 h-4" />
-                        {media.uploader_name}
+                        {media.uploaded_by || 'Guest'}
                       </div>
                       
                       {media.caption && (
@@ -233,7 +233,7 @@ export default function MediaModeration() {
                             </Button>
                           </div>
                           
-                          {media.media_type === 'image' && (
+                          {media.file_type === 'image' && (
                             <Button
                               onClick={() => applyBrandingFilter(media)}
                               disabled={isProcessing[media.id]}

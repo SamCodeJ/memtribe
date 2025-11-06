@@ -4,7 +4,6 @@ import { Event, Media, User, UploadFile } from "@/api/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { getPlanDetails } from "@/components/utils/plans";
@@ -29,8 +28,7 @@ export default function MediaUpload() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [formData, setFormData] = useState({
     uploader_name: "",
-    uploader_email: "",
-    caption: ""
+    uploader_email: ""
   });
   const fileInputRef = useRef(null);
   const videoRef = useRef(null);
@@ -167,26 +165,23 @@ export default function MediaUpload() {
       clearInterval(progressInterval);
       setUploadProgress(100); // Set to 100% on successful upload
 
-      const mediaType = file.type.startsWith('video/') ? 'video' : 'image';
+      const fileType = file.type.startsWith('video/') ? 'video' : 'image';
       
       await Media.create({
         event_id: event.id,
-        uploader_name: formData.uploader_name,
+        uploaded_by: formData.uploader_name,
         uploader_email: formData.uploader_email,
-        media_url: file_url,
-        media_type: mediaType,
-        caption: formData.caption,
-        status: "pending"
+        file_url: file_url,
+        file_type: fileType,
+        moderation_status: "pending"
       });
 
       setUploadedFiles(prev => [...prev, {
         url: file_url,
-        type: mediaType,
+        type: fileType,
         name: file.name
       }]);
       setMediaCount(prev => prev + 1); // Increment media count after successful upload
-
-      setFormData(prev => ({ ...prev, caption: "" })); // Clear caption after upload
       
     } catch (error) {
       console.error("Upload failed:", error);
@@ -276,17 +271,6 @@ export default function MediaUpload() {
             <CardTitle>Upload Media</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div>
-              <Label htmlFor="caption">Caption (Optional)</Label>
-              <Textarea
-                id="caption"
-                value={formData.caption}
-                onChange={(e) => setFormData(prev => ({ ...prev, caption: e.target.value }))}
-                placeholder="Add a caption to your photo/video..."
-                rows={2}
-              />
-            </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Button
                 onClick={() => fileInputRef.current?.click()}

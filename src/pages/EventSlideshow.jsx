@@ -177,13 +177,13 @@ export default function EventSlideshow() {
           <div class="slideshow">
             ${approvedMedia.map((media, index) => `
               <div class="slide ${index === 0 ? 'active' : ''}" data-index="${index}">
-                ${media.media_type === 'image'
-                  ? `<img src="${media.filtered_url || media.media_url}" alt="Event memory" />`
-                  : `<video src="${media.media_url}" controls muted />`
+                ${media.file_type === 'image'
+                  ? `<img src="${media.filtered_url || media.file_url}" alt="Event memory" />`
+                  : `<video src="${media.file_url}" controls muted />`
                 }
                 <div class="overlay">
                   <h3>${media.caption || ''}</h3>
-                  <p>By ${media.uploader_name} • ${new Date(media.created_at).toLocaleDateString()}</p>
+                  <p>By ${media.uploaded_by || 'Guest'} • ${new Date(media.created_at).toLocaleDateString()}</p>
                 </div>
               </div>
             `).join('')}
@@ -357,15 +357,15 @@ export default function EventSlideshow() {
         <div className="flex-1 relative">
           <Card className="h-full border-0 shadow-2xl bg-black overflow-hidden">
             <CardContent className="p-0 h-full relative">
-              {currentMedia.media_type === 'image' ? (
+              {currentMedia.file_type === 'image' ? (
                 <img
-                  src={currentMedia.filtered_url || currentMedia.media_url}
+                  src={currentMedia.filtered_url || currentMedia.file_url}
                   alt="Event memory"
                   className="w-full h-full object-contain"
                 />
               ) : (
                 <video
-                  src={currentMedia.media_url}
+                  src={currentMedia.file_url}
                   className="w-full h-full object-contain"
                   autoPlay
                   muted
@@ -381,7 +381,7 @@ export default function EventSlideshow() {
                   )}
                   <div className="flex items-center gap-2 text-amber-400">
                     <UserIcon className="w-4 h-4" />
-                    <span>{currentMedia.uploader_name}</span>
+                    <span>{currentMedia.uploaded_by || 'Guest'}</span>
                     <span className="mx-2">•</span>
                     <span className="text-white/70">
                       {new Date(currentMedia.created_at).toLocaleString()}
