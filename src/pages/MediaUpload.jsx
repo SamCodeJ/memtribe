@@ -190,7 +190,8 @@ export default function MediaUpload() {
       
     } catch (error) {
       console.error("Upload failed:", error);
-      alert("Upload failed. Please try again.");
+      const errorMessage = error.message || "Upload failed. Please try again.";
+      alert(`Upload failed: ${errorMessage}\n\nPlease check:\n1. Backend is running on http://localhost:5000\n2. Database is connected\n3. Browser console for detailed errors`);
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
