@@ -9,13 +9,59 @@ const prisma = new PrismaClient();
 export const createMedia = asyncHandler(async (req, res) => {
   const { event_id } = req.body;
 
-  // Check if event exists
+  // Check if event exists and get organizer info
   const event = await prisma.event.findUnique({
-    where: { id: event_id }
+    where: { id: event_id },
+    include: {
+      organizer: {
+        select: {
+          id: true,
+          subscription_plan: true
+        }
+      }
+    }
   });
 
   if (!event) {
     return res.status(404).json({ error: 'Event not found' });
+  }
+
+  // Check media count for this event
+  const existingMediaCount = await prisma.media.count({
+    where: { event_id }
+  });
+
+  // Get the organizer's plan limits
+  const planSlug = event.organizer?.subscription_plan || 'starter';
+  const pkg = await prisma.package.findUnique({
+    where: { package_slug: planSlug },
+    include: {
+      package_features: {
+        include: {
+          feature: true
+        }
+      }
+    }
+  });
+
+  // Find media_per_event limit
+  let mediaLimit = 100; // Default limit
+  if (pkg && pkg.package_features) {
+    const mediaLimitFeature = pkg.package_features.find(
+      pf => pf.feature.feature_key === 'media_per_event'
+    );
+    if (mediaLimitFeature) {
+      mediaLimit = mediaLimitFeature.is_unlimited 
+        ? Infinity 
+        : parseInt(mediaLimitFeature.feature_value, 10);
+    }
+  }
+
+  // Check if limit is reached
+  if (existingMediaCount >= mediaLimit) {
+    return res.status(403).json({ 
+      error: `Media upload limit reached. This event can have a maximum of ${mediaLimit} media uploads on the ${pkg?.package_name || 'current'} plan.` 
+    });
   }
 
   const media = await prisma.media.create({

@@ -132,7 +132,17 @@ export default function Layout({ children, currentPageName }) {
     }
   };
 
-  if (isLoading) {
+  // Define public pages that don't require authentication
+  const publicPages = ["Landing", "EventView", "Login", "Signup", "MediaUpload", "EventSlideshow", "login", "signup"];
+  const isPublicPage = publicPages.includes(currentPageName);
+  
+  // Debug logging for development (can be removed in production)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Layout - Current Page:', currentPageName, 'Is Public:', isPublicPage, 'Has User:', !!currentUser);
+  }
+
+  // Show loading state only for pages that require authentication
+  if (isLoading && !isPublicPage) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-2 border-amber-600 border-t-transparent"></div>
@@ -140,7 +150,8 @@ export default function Layout({ children, currentPageName }) {
     );
   }
 
-  if (!currentUser && currentPageName !== "Landing" && currentPageName !== "EventView" && currentPageName !== "Login" && currentPageName !== "Signup" && currentPageName !== "MediaUpload" && currentPageName !== "EventSlideshow") {
+  // Show access restricted page only for protected pages when user is not authenticated
+  if (!currentUser && !isPublicPage) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-8">
@@ -170,7 +181,8 @@ export default function Layout({ children, currentPageName }) {
     );
   }
 
-  if (!currentUser || currentPageName === "Landing" || currentPageName === "EventView" || currentPageName === "Login" || currentPageName === "Signup" || currentPageName === "MediaUpload" || currentPageName === "EventSlideshow") {
+  // Render public pages without sidebar layout
+  if (!currentUser || isPublicPage) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
         {children}

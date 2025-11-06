@@ -52,17 +52,24 @@ export default function MediaUpload() {
         }
         setEvent(foundEvent);
         
-        const [organizer, eventMedia] = await Promise.all([
-          User.get(foundEvent.organizer_id),
-          Media.filter({ event_id: eventId })
-        ]);
-
-        const plan = await getPlanDetails(organizer);
-        setCurrentPlan(plan);
+        // Fetch event media count
+        const eventMedia = await Media.filter({ event_id: eventId });
         setMediaCount(eventMedia.length);
 
+        // Try to get current user's plan (if authenticated)
+        try {
+          const currentUser = await User.me();
+          const plan = await getPlanDetails(currentUser);
+          setCurrentPlan(plan);
+        } catch (authError) {
+          // Guest users - allow uploads without strict frontend limits
+          // The backend will enforce proper limits based on the event organizer's plan
+          console.log("Guest upload mode - backend will enforce limits");
+          setCurrentPlan(null); // Set to null to indicate no frontend limit checking
+        }
+
       } catch (error) {
-        console.error("Error loading prerequisites:", error);
+        console.error("Error loading event:", error);
         setEvent(null); // Ensure event is null on error to show "Event Not Found"
       } finally {
         setIsLoading(false);
@@ -141,7 +148,8 @@ export default function MediaUpload() {
     }
 
     // Check if currentPlan is loaded and if media count exceeds the limit
-    if (currentPlan && mediaCount >= currentPlan.media_per_event) {
+    // Skip check for guest users (currentPlan === null) - backend will enforce limits
+    if (currentPlan && currentPlan.media_per_event && mediaCount >= currentPlan.media_per_event) {
       alert(`This event has reached its media upload limit (${currentPlan.media_per_event} media) for the organizer's ${currentPlan.name} plan.`);
       return;
     }
@@ -208,8 +216,8 @@ export default function MediaUpload() {
     );
   }
 
-  // Render UpgradePlanBlocker if media limit is reached
-  if (currentPlan && mediaCount >= currentPlan.media_per_event) {
+  // Render UpgradePlanBlocker if media limit is reached (for authenticated users only)
+  if (currentPlan && currentPlan.media_per_event && mediaCount >= currentPlan.media_per_event) {
      return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
         <div className="p-4 md:p-8 max-w-2xl mx-auto">
