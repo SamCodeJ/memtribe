@@ -46,7 +46,7 @@ export default function PhotobookCreator() {
 
         const [organizer, allMedia] = await Promise.all([
           User.get(foundEvent.organizer_id),
-          Media.filter({ event_id: id, status: "approved" }, "-created_at")
+          Media.filter({ event_id: id, moderation_status: "approved" }, "-created_at")
         ]);
         
         const plan = await getPlanDetails(organizer);

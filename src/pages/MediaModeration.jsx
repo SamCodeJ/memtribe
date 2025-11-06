@@ -92,7 +92,7 @@ export default function MediaModeration() {
   const handleModeration = async (mediaId, status) => {
     try {
       await Media.update(mediaId, {
-        status,
+        moderation_status: status,
         moderator_notes: moderatorNotes
       });
       setModeratorNotes("");
@@ -104,13 +104,13 @@ export default function MediaModeration() {
 
   const filteredMedia = mediaItems.filter(media => {
     if (activeTab === "all") return true;
-    return media.status === activeTab;
+    return media.moderation_status === activeTab;
   });
 
   const stats = {
-    pending: mediaItems.filter(m => m.status === "pending").length,
-    approved: mediaItems.filter(m => m.status === "approved").length,
-    rejected: mediaItems.filter(m => m.status === "rejected").length
+    pending: mediaItems.filter(m => m.moderation_status === "pending").length,
+    approved: mediaItems.filter(m => m.moderation_status === "approved").length,
+    rejected: mediaItems.filter(m => m.moderation_status === "rejected").length
   };
 
   if (isLoading) {
@@ -180,11 +180,11 @@ export default function MediaModeration() {
                       
                       <div className="absolute top-2 left-2">
                         <Badge className={
-                          media.status === 'approved' ? 'bg-green-600' :
-                          media.status === 'rejected' ? 'bg-red-600' :
+                          media.moderation_status === 'approved' ? 'bg-green-600' :
+                          media.moderation_status === 'rejected' ? 'bg-red-600' :
                           'bg-yellow-600'
                         }>
-                          {media.status}
+                          {media.moderation_status}
                         </Badge>
                       </div>
                       
@@ -211,7 +211,7 @@ export default function MediaModeration() {
                         {new Date(media.created_at).toLocaleString()}
                       </div>
 
-                      {media.status === 'pending' && (
+                      {media.moderation_status === 'pending' && (
                         <div className="space-y-3 pt-3">
                           <div className="flex gap-2">
                             <Button

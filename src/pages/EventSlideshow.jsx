@@ -48,7 +48,7 @@ export default function EventSlideshow() {
     try {
       const media = await Media.filter({
         event_id: eventId,
-        status: "approved"
+        moderation_status: "approved"
       }, "-created_at");
       setApprovedMedia(media);
 
