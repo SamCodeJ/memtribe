@@ -125,6 +125,9 @@ export default function EventView() {
         event_id: event.id
       });
       
+      console.log('RSVP Response from API:', response); // DEBUG
+      console.log('RSVP Data sent:', rsvpData); // DEBUG
+      
       // Success!
       setRsvpResponse(response);
       setRsvpSubmitted(true);
@@ -191,6 +194,14 @@ export default function EventView() {
     if (field === 'guest_email') {
       setEmailNotAllowed(false);
     }
+  };
+
+  // Helper to get display data - uses response if available, otherwise falls back to form data
+  const getDisplayData = () => {
+    if (rsvpResponse && Object.keys(rsvpResponse).length > 0) {
+      return rsvpResponse;
+    }
+    return rsvpData;
   };
 
   if (isLoading) {
@@ -486,73 +497,76 @@ export default function EventView() {
               </div>
 
               {/* RSVP Details Summary */}
-              {rsvpResponse && (
-                <div className="bg-white rounded-lg p-6 shadow-md border border-green-200 space-y-4">
-                  <h4 className="font-semibold text-slate-900 text-lg mb-4 flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                    Your RSVP Details
-                  </h4>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="flex items-start gap-3">
-                      <UserIcon className="w-5 h-5 text-slate-500 mt-0.5" />
-                      <div>
-                        <p className="text-sm text-slate-500">Guest Name</p>
-                        <p className="font-medium text-slate-900">{rsvpResponse.guest_name}</p>
-                      </div>
-                    </div>
+              {rsvpSubmitted && (() => {
+                const displayData = getDisplayData();
+                return (
+                  <div className="bg-white rounded-lg p-6 shadow-md border border-green-200 space-y-4">
+                    <h4 className="font-semibold text-slate-900 text-lg mb-4 flex items-center gap-2">
+                      <CheckCircle2 className="w-5 h-5 text-green-600" />
+                      Your RSVP Details
+                    </h4>
                     
-                    <div className="flex items-start gap-3">
-                      <Mail className="w-5 h-5 text-slate-500 mt-0.5" />
-                      <div>
-                        <p className="text-sm text-slate-500">Email</p>
-                        <p className="font-medium text-slate-900">{rsvpResponse.guest_email}</p>
-                      </div>
-                    </div>
-                    
-                    {rsvpResponse.guest_phone && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="flex items-start gap-3">
-                        <Phone className="w-5 h-5 text-slate-500 mt-0.5" />
+                        <UserIcon className="w-5 h-5 text-slate-500 mt-0.5" />
                         <div>
-                          <p className="text-sm text-slate-500">Phone</p>
-                          <p className="font-medium text-slate-900">{rsvpResponse.guest_phone}</p>
+                          <p className="text-sm text-slate-500">Guest Name</p>
+                          <p className="font-medium text-slate-900">{displayData.guest_name}</p>
                         </div>
                       </div>
-                    )}
-                    
-                    <div className="flex items-start gap-3">
-                      <Users className="w-5 h-5 text-slate-500 mt-0.5" />
-                      <div>
-                        <p className="text-sm text-slate-500">Number of Guests</p>
-                        <p className="font-medium text-slate-900">{rsvpResponse.guest_count}</p>
+                      
+                      <div className="flex items-start gap-3">
+                        <Mail className="w-5 h-5 text-slate-500 mt-0.5" />
+                        <div>
+                          <p className="text-sm text-slate-500">Email</p>
+                          <p className="font-medium text-slate-900">{displayData.guest_email}</p>
+                        </div>
+                      </div>
+                      
+                      {displayData.guest_phone && (
+                        <div className="flex items-start gap-3">
+                          <Phone className="w-5 h-5 text-slate-500 mt-0.5" />
+                          <div>
+                            <p className="text-sm text-slate-500">Phone</p>
+                            <p className="font-medium text-slate-900">{displayData.guest_phone}</p>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-start gap-3">
+                        <Users className="w-5 h-5 text-slate-500 mt-0.5" />
+                        <div>
+                          <p className="text-sm text-slate-500">Number of Guests</p>
+                          <p className="font-medium text-slate-900">{displayData.guest_count}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-3">
+                        <CheckCircle2 className="w-5 h-5 text-slate-500 mt-0.5" />
+                        <div>
+                          <p className="text-sm text-slate-500">Response</p>
+                          <Badge className={`mt-1 ${
+                            displayData.status === 'attending' ? 'bg-green-600' :
+                            displayData.status === 'maybe' ? 'bg-yellow-600' :
+                            'bg-red-600'
+                          }`}>
+                            {displayData.status === 'attending' ? "I'll be there" :
+                             displayData.status === 'maybe' ? "Maybe" :
+                             "Can't make it"}
+                          </Badge>
+                        </div>
                       </div>
                     </div>
-                    
-                    <div className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-slate-500 mt-0.5" />
-                      <div>
-                        <p className="text-sm text-slate-500">Response</p>
-                        <Badge className={`mt-1 ${
-                          rsvpResponse.status === 'attending' ? 'bg-green-600' :
-                          rsvpResponse.status === 'maybe' ? 'bg-yellow-600' :
-                          'bg-red-600'
-                        }`}>
-                          {rsvpResponse.status === 'attending' ? "I'll be there" :
-                           rsvpResponse.status === 'maybe' ? "Maybe" :
-                           "Can't make it"}
-                        </Badge>
-                      </div>
-                    </div>
-                  </div>
 
-                  {rsvpResponse.notes && (
-                    <div className="pt-4 border-t border-slate-200">
-                      <p className="text-sm text-slate-500 mb-1">Additional Notes</p>
-                      <p className="text-slate-700 italic">{rsvpResponse.notes}</p>
-                    </div>
-                  )}
-                </div>
-              )}
+                    {displayData.notes && (
+                      <div className="pt-4 border-t border-slate-200">
+                        <p className="text-sm text-slate-500 mb-1">Additional Notes</p>
+                        <p className="text-slate-700 italic">{displayData.notes}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <div className="flex items-start gap-3">
