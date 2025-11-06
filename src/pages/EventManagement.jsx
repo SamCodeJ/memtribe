@@ -18,7 +18,8 @@ import {
   Upload,
   Play,
   ImageIcon as ImageIconLucide,
-  BookOpen
+  BookOpen,
+  RefreshCw
 } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -29,11 +30,25 @@ export default function EventManagement() {
   const [rsvps, setRsvps] = useState([]);
   const [filteredRsvps, setFilteredRsvps] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [lastRefresh, setLastRefresh] = useState(null);
+  const [autoRefresh, setAutoRefresh] = useState(true);
 
   useEffect(() => {
     loadEventData();
   }, []);
+
+  // Auto-refresh guest list every 30 seconds
+  useEffect(() => {
+    if (!autoRefresh) return;
+    
+    const interval = setInterval(() => {
+      loadEventData();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [autoRefresh]);
 
   useEffect(() => {
     const results = rsvps.filter(rsvp =>
@@ -43,7 +58,11 @@ export default function EventManagement() {
     setFilteredRsvps(results);
   }, [searchTerm, rsvps]);
 
-  const loadEventData = async () => {
+  const loadEventData = async (isManualRefresh = false) => {
+    if (isManualRefresh) {
+      setIsRefreshing(true);
+    }
+    
     try {
       const urlParams = new URLSearchParams(window.location.search);
       const eventId = urlParams.get('id');
@@ -59,10 +78,17 @@ export default function EventManagement() {
       const allRsvps = await RSVP.filter({ event_id: eventId }, "-created_date");
       setRsvps(allRsvps);
       setFilteredRsvps(allRsvps);
+      setLastRefresh(new Date());
     } catch (error) {
       console.error("Error loading event data:", error);
     }
+    
     setIsLoading(false);
+    setIsRefreshing(false);
+  };
+  
+  const handleManualRefresh = () => {
+    loadEventData(true);
   };
 
   const handleCheckIn = async (rsvp) => {
@@ -126,17 +152,63 @@ export default function EventManagement() {
           <div className="lg:col-span-2">
             <Card className="border-0 shadow-lg">
               <CardHeader className="border-b">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                  <CardTitle className="text-xl font-bold">Guest List</CardTitle>
-                  <div className="relative w-full md:w-64">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input 
-                      placeholder="Search guests..." 
-                      className="pl-9"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                    />
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <div className="flex flex-col gap-2">
+                      <CardTitle className="text-xl font-bold">Guest List</CardTitle>
+                      {lastRefresh && (
+                        <p className="text-xs text-slate-500">
+                          Last updated: {lastRefresh.toLocaleTimeString()}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-3 w-full md:w-auto">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={handleManualRefresh}
+                        disabled={isRefreshing}
+                        className="whitespace-nowrap"
+                      >
+                        <RefreshCw className={`w-4 h-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                        {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                      </Button>
+                      <div className="relative w-full md:w-64">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Input 
+                          placeholder="Search guests..." 
+                          className="pl-9"
+                          value={searchTerm}
+                          onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                      </div>
+                    </div>
                   </div>
+                  
+                  {autoRefresh && (
+                    <div className="flex items-center gap-2 text-xs text-slate-500 bg-blue-50 px-3 py-2 rounded-lg border border-blue-100">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                      Auto-refreshing every 30 seconds
+                      <button
+                        onClick={() => setAutoRefresh(false)}
+                        className="ml-auto text-blue-600 hover:text-blue-800 underline"
+                      >
+                        Disable
+                      </button>
+                    </div>
+                  )}
+                  
+                  {!autoRefresh && (
+                    <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 px-3 py-2 rounded-lg border border-slate-200">
+                      Auto-refresh is disabled
+                      <button
+                        onClick={() => setAutoRefresh(true)}
+                        className="ml-auto text-blue-600 hover:text-blue-800 underline"
+                      >
+                        Enable
+                      </button>
+                    </div>
+                  )}
                 </div>
               </CardHeader>
               <CardContent className="p-0">
