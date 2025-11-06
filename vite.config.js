@@ -8,6 +8,9 @@ export default defineConfig({
   server: {
     allowedHosts: true
   },
+  build: {
+    target: 'esnext', // Enable top-level await support
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -16,6 +19,7 @@ export default defineConfig({
   },
   optimizeDeps: {
     esbuildOptions: {
+      target: 'esnext', // Enable top-level await support in dev
       loader: {
         '.js': 'jsx',
       },
