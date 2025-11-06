@@ -75,7 +75,7 @@ export default function EventManagement() {
       const foundEvent = allEvents.find(e => e.id === eventId);
       setEvent(foundEvent);
 
-      const allRsvps = await RSVP.filter({ event_id: eventId }, "-created_date");
+      const allRsvps = await RSVP.filter({ event_id: eventId }, "-created_at");
       setRsvps(allRsvps);
       setFilteredRsvps(allRsvps);
       setLastRefresh(new Date());

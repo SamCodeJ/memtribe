@@ -46,7 +46,7 @@ export default function PhotobookCreator() {
 
         const [organizer, allMedia] = await Promise.all([
           User.get(foundEvent.organizer_id),
-          Media.filter({ event_id: id, status: "approved" }, "-created_date")
+          Media.filter({ event_id: id, status: "approved" }, "-created_at")
         ]);
         
         const plan = await getPlanDetails(organizer);
@@ -174,7 +174,7 @@ export default function PhotobookCreator() {
                 <div class="photo-item">
                   <img src="${photo.filtered_url || photo.media_url}" alt="Event memory" />
                   ${photo.caption ? `<div class="photo-caption">${photo.caption}</div>` : ''}
-                  <div class="photo-meta">By ${photo.uploader_name} • ${new Date(photo.created_date).toLocaleDateString()}</div>
+                  <div class="photo-meta">By ${photo.uploader_name} • ${new Date(photo.created_at).toLocaleDateString()}</div>
                 </div>
               `).join('')}
             </div>

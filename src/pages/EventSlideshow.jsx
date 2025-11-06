@@ -49,7 +49,7 @@ export default function EventSlideshow() {
       const media = await Media.filter({
         event_id: eventId,
         status: "approved"
-      }, "-created_date");
+      }, "-created_at");
       setApprovedMedia(media);
 
       if (media.length > 0) {
@@ -183,7 +183,7 @@ export default function EventSlideshow() {
                 }
                 <div class="overlay">
                   <h3>${media.caption || ''}</h3>
-                  <p>By ${media.uploader_name} • ${new Date(media.created_date).toLocaleDateString()}</p>
+                  <p>By ${media.uploader_name} • ${new Date(media.created_at).toLocaleDateString()}</p>
                 </div>
               </div>
             `).join('')}
@@ -384,7 +384,7 @@ export default function EventSlideshow() {
                     <span>{currentMedia.uploader_name}</span>
                     <span className="mx-2">•</span>
                     <span className="text-white/70">
-                      {new Date(currentMedia.created_date).toLocaleString()}
+                      {new Date(currentMedia.created_at).toLocaleString()}
                     </span>
                   </div>
                 </div>

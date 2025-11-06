@@ -43,7 +43,7 @@ export default function MediaModeration() {
       const foundEvent = events.find(e => e.id === eventId);
       setEvent(foundEvent);
 
-      const allMedia = await Media.filter({ event_id: eventId }, "-created_date");
+      const allMedia = await Media.filter({ event_id: eventId }, "-created_at");
       setMediaItems(allMedia);
     } catch (error) {
       console.error("Error loading data:", error);
@@ -208,7 +208,7 @@ export default function MediaModeration() {
                       
                       <div className="flex items-center gap-2 text-xs text-slate-500">
                         <Clock className="w-3 h-3" />
-                        {new Date(media.created_date).toLocaleString()}
+                        {new Date(media.created_at).toLocaleString()}
                       </div>
 
                       {media.status === 'pending' && (

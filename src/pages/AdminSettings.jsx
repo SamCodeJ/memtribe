@@ -54,7 +54,7 @@ export default function AdminSettings() {
         User.list(),
         Event.list("-created_date"),
         RSVP.list(),
-        Media.list("-created_date"),
+        Media.list("-created_at"),
         SystemSettings.list()
       ]);
 
