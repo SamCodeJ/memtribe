@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 export const createMedia = asyncHandler(async (req, res) => {
   const { event_id } = req.body;
 
- me  // Check if event exists and get organizer info
+  // Check if event exists and get organizer info
   const event = await prisma.event.findUnique({
     where: { id: event_id },
     include: {
