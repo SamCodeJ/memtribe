@@ -109,13 +109,6 @@ export default function Login() {
               Back to Home
             </button>
           </div>
-
-          {/* Test Account Info */}
-          <div className="mt-6 p-4 rounded-md" style={{backgroundColor: '#E8DFFF'}}>
-            <p className="text-xs font-semibold mb-2" style={{color: '#350C8E'}}>Test Accounts:</p>
-            <p className="text-xs" style={{color: '#4A1BA0'}}>Admin: admin@memtribe.com / admin123</p>
-            <p className="text-xs" style={{color: '#4A1BA0'}}>User: test@memtribe.com / test123</p>
-          </div>
         </CardContent>
       </Card>
     </div>

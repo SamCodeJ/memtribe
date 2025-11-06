@@ -110,7 +110,9 @@ export default function EventView() {
       setRsvpSubmitted(true);
     } catch (error) {
       console.error("Error submitting RSVP:", error);
-      alert("Failed to submit RSVP. Please try again.");
+      // Show more detailed error message
+      const errorMessage = error.message || "Failed to submit RSVP. Please try again.";
+      alert(`Failed to submit RSVP: ${errorMessage}\n\nPlease check the console for more details.`);
     }
     setIsSubmitting(false);
   };

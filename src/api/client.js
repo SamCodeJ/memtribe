@@ -41,16 +41,29 @@ class APIClient {
     try {
       console.log('API Request:', url, options.method || 'GET'); // DEBUG
       const response = await fetch(url, config);
-      const data = await response.json();
+      
+      // Try to parse JSON response
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        console.error('Failed to parse JSON response:', jsonError);
+        throw new Error(`Server returned invalid JSON response. Status: ${response.status} ${response.statusText}`);
+      }
 
       if (!response.ok) {
-        console.error('API Error:', url, data); // DEBUG
-        throw new Error(data.error || data.message || 'Request failed');
+        console.error('API Error:', url, 'Status:', response.status, 'Data:', data); // DEBUG
+        const errorMessage = data.error || data.message || `Request failed with status ${response.status}`;
+        throw new Error(errorMessage);
       }
 
       return data;
     } catch (error) {
       console.error('API request error:', error);
+      // If it's a network error (e.g., backend not running)
+      if (error.message.includes('Failed to fetch') || error.name === 'TypeError') {
+        throw new Error('Cannot connect to server. Please ensure the backend is running.');
+      }
       throw error;
     }
   }
