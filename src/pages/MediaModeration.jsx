@@ -91,14 +91,17 @@ export default function MediaModeration() {
 
   const handleModeration = async (mediaId, status) => {
     try {
-      await Media.update(mediaId, {
-        moderation_status: status,
-        moderator_notes: moderatorNotes
+      console.log('Updating media:', mediaId, 'to status:', status);
+      const result = await Media.update(mediaId, {
+        moderation_status: status
       });
+      console.log('Media updated successfully:', result);
       setModeratorNotes("");
-      loadData();
+      await loadData(); // Wait for reload
+      alert(`Media ${status} successfully!`);
     } catch (error) {
       console.error("Error updating media status:", error);
+      alert(`Failed to ${status} media: ${error.message}`);
     }
   };
 
@@ -169,14 +172,26 @@ export default function MediaModeration() {
                           src={media.filtered_url || media.file_url}
                           alt="Uploaded content"
                           className="w-full h-48 object-cover rounded-t-lg"
+                          onError={(e) => {
+                            console.error('Image load failed:', media.file_url);
+                            e.target.style.display = 'none';
+                            e.target.nextSibling.style.display = 'flex';
+                          }}
                         />
                       ) : (
                         <video
                           src={media.file_url}
                           className="w-full h-48 object-cover rounded-t-lg"
                           controls
+                          onError={(e) => {
+                            console.error('Video load failed:', media.file_url);
+                          }}
                         />
                       )}
+                      <div className="w-full h-48 bg-slate-200 rounded-t-lg hidden items-center justify-center flex-col gap-2">
+                        <ImageIcon className="w-12 h-12 text-slate-400" />
+                        <p className="text-xs text-slate-500 text-center px-4">Image failed to load<br/>{media.file_url}</p>
+                      </div>
                       
                       <div className="absolute top-2 left-2">
                         <Badge className={
