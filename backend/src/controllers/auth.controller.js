@@ -202,6 +202,31 @@ export const getAllUsers = asyncHandler(async (req, res) => {
 });
 
 /**
+ * Get user by ID (public info only)
+ */
+export const getUserById = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      full_name: true,
+      role: true,
+      subscription_plan: true,
+      created_at: true
+      // Note: email is excluded for privacy unless requested by admin
+    }
+  });
+
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+
+  res.json(user);
+});
+
+/**
  * Update user by ID (admin only)
  */
 export const updateUser = asyncHandler(async (req, res) => {

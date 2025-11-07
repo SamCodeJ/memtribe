@@ -49,6 +49,11 @@ export default function PhotobookCreator() {
           Media.filter({ event_id: id, moderation_status: "approved" }, "-created_at")
         ]);
         
+        // DEBUG: Check what media is being loaded (open browser console F12 to see)
+        console.log("🔍 DEBUG: All approved media:", allMedia);
+        console.log("🔍 DEBUG: Media count:", allMedia.length);
+        console.log("🔍 DEBUG: File types:", allMedia.map(m => ({ id: m.id, file_type: m.file_type, file_url: m.file_url })));
+        
         const plan = await getPlanDetails(organizer);
         setCurrentPlan(plan);
 
@@ -57,6 +62,9 @@ export default function PhotobookCreator() {
 
         // Filter only images for photobook
         const imageMedia = allMedia.filter(media => media.file_type === 'image');
+        console.log("🔍 DEBUG: Filtered image media:", imageMedia);
+        console.log("🔍 DEBUG: Image count:", imageMedia.length);
+        
         setApprovedMedia(imageMedia);
         setSelectedMedia(imageMedia.map(media => media.id)); // Select all by default
       } catch (error) {

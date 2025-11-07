@@ -1,0 +1,29 @@
+# Copy this file to .env and update the values
+
+# Database (for Docker setup)
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/memtribe?schema=public"
+
+# OR for manual PostgreSQL install, use your password:
+# DATABASE_URL="postgresql://postgres:YOUR_PASSWORD@localhost:5432/memtribe?schema=public"
+
+# JWT Secret (change this!)
+JWT_SECRET="your-secret-key-change-this-in-production"
+
+# Server Configuration
+PORT=5000
+NODE_ENV=development
+CLIENT_URL="http://localhost:5173"
+BASE_URL="http://localhost:5000"
+
+# Optional: AWS S3 (leave commented to use local storage)
+# AWS_ACCESS_KEY_ID=your-access-key
+# AWS_SECRET_ACCESS_KEY=your-secret-key
+# AWS_S3_BUCKET=your-bucket-name
+# AWS_REGION=us-east-1
+
+# Optional: OpenAI (for AI image generation)
+# OPENAI_API_KEY=your-openai-api-key
+
+# Optional: Resend (for email notifications)
+# RESEND_API_KEY=your-resend-api-key
+

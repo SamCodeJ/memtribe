@@ -87,6 +87,7 @@ model Media {
   file_type       String // image, video
   uploaded_by     String? // guest name
   uploader_email  String?
+  filtered_url    String? // URL for branded/filtered version
   moderation_status String @default("pending") // pending, approved, rejected
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt

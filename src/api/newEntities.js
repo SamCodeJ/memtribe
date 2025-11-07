@@ -87,6 +87,11 @@ class UserEntity {
     return response;
   }
 
+  async get(userId) {
+    const response = await apiClient.get(`/auth/users/${userId}`);
+    return response;
+  }
+
   async update(userId, data) {
     const response = await apiClient.put(`/auth/users/${userId}`, data);
     return response.user;

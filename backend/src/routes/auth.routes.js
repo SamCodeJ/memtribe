@@ -1,7 +1,7 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { register, login, getCurrentUser, refreshToken, updateCurrentUser, getAllUsers, updateUser } from '../controllers/auth.controller.js';
-import { authenticate, requireAdmin } from '../middleware/auth.middleware.js';
+import { register, login, getCurrentUser, refreshToken, updateCurrentUser, getAllUsers, getUserById, updateUser } from '../controllers/auth.controller.js';
+import { authenticate, requireAdmin, optionalAuth } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validation.js';
 
 const router = express.Router();
@@ -35,6 +35,9 @@ router.put('/me', authenticate, updateCurrentUser);
 
 // Get all users (admin only)
 router.get('/users', authenticate, requireAdmin, getAllUsers);
+
+// Get user by ID (optional auth - public info only)
+router.get('/users/:id', optionalAuth, getUserById);
 
 // Update user by ID (admin only)
 router.put('/users/:id', authenticate, requireAdmin, updateUser);
