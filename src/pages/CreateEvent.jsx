@@ -208,7 +208,17 @@ export default function CreateEvent() {
       navigate(createPageUrl("MyEvents"));
     } catch (error) {
       console.error("Error creating event:", error);
-      alert("Failed to create event. Please try again.");
+      
+      // Check if it's a subscription limit error
+      if (error.response?.status === 403 || error.message?.includes('limit')) {
+        const errorMessage = error.response?.data?.error || error.message || "Event creation limit reached. Please upgrade your plan.";
+        alert(errorMessage);
+        
+        // Reload to refresh the event count and show the upgrade blocker
+        window.location.reload();
+      } else {
+        alert("Failed to create event. Please try again.");
+      }
     }
     setIsLoading(false);
   };

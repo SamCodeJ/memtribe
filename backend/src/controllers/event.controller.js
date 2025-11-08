@@ -8,6 +8,66 @@ const prisma = new PrismaClient();
  * Create new event
  */
 export const createEvent = asyncHandler(async (req, res) => {
+  // Get user with subscription plan
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.id }
+  });
+
+  if (!user) {
+    return res.status(404).json({ error: 'User not found' });
+  }
+
+  // Get the user's subscription plan
+  const planSlug = user.subscription_plan || 'starter';
+  const pkg = await prisma.package.findUnique({
+    where: { package_slug: planSlug },
+    include: {
+      package_features: {
+        include: {
+          feature: true
+        }
+      }
+    }
+  });
+
+  // Find events_per_month limit
+  let eventsLimit = 2; // Default Starter limit
+  if (pkg && pkg.package_features) {
+    const eventsLimitFeature = pkg.package_features.find(
+      pf => pf.feature.feature_key === 'events_per_month'
+    );
+    if (eventsLimitFeature) {
+      eventsLimit = eventsLimitFeature.is_unlimited 
+        ? Infinity 
+        : parseInt(eventsLimitFeature.feature_value, 10);
+    }
+  }
+
+  // Check if limit is unlimited
+  if (eventsLimit !== Infinity) {
+    // Calculate events created in the current month
+    const oneMonthAgo = new Date();
+    oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+    
+    const eventCount = await prisma.event.count({
+      where: {
+        organizer_id: req.user.id,
+        created_date: {
+          gte: oneMonthAgo
+        }
+      }
+    });
+
+    // Check if limit is reached
+    if (eventCount >= eventsLimit) {
+      return res.status(403).json({ 
+        error: `Event creation limit reached. You have created ${eventCount} of ${eventsLimit} events allowed on the ${pkg?.package_name || 'current'} plan this month. Please upgrade your plan to create more events.`,
+        limit: eventsLimit,
+        current: eventCount
+      });
+    }
+  }
+
   // Convert datetime-local format to ISO-8601
   const eventData = {
     ...req.body,
