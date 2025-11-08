@@ -60,21 +60,36 @@ export const createEvent = asyncHandler(async (req, res) => {
   // Check if limit is unlimited
   if (eventsLimit !== Infinity) {
     // Calculate events created in the CURRENT CALENDAR MONTH (resets on 1st of each month)
-    const startOfMonth = new Date();
-    startOfMonth.setDate(1); // Set to 1st day of current month
-    startOfMonth.setHours(0, 0, 0, 0); // Set to midnight
+    const now = new Date();
+    const startOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0));
     
+    console.log('Current date:', now.toISOString());
     console.log('Checking events created since START OF MONTH:', startOfMonth.toISOString());
     
-    const eventCount = await prisma.event.count({
+    // Get actual events to see their dates
+    const events = await prisma.event.findMany({
       where: {
         organizer_id: req.user.id,
         created_date: {
           gte: startOfMonth
         }
+      },
+      select: {
+        id: true,
+        title: true,
+        created_date: true
+      },
+      orderBy: {
+        created_date: 'desc'
       }
     });
 
+    console.log('Events created this month:');
+    events.forEach((evt, idx) => {
+      console.log(`  ${idx + 1}. "${evt.title}" - Created: ${evt.created_date.toISOString()}`);
+    });
+    
+    const eventCount = events.length;
     console.log('Current event count:', eventCount);
     console.log('Limit check:', `${eventCount} >= ${eventsLimit} ?`, eventCount >= eventsLimit);
 

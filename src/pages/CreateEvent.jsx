@@ -60,10 +60,9 @@ export default function CreateEvent() {
         const plan = await getPlanDetails(user);
         setCurrentPlan(plan);
 
-        // Calculate start of current calendar month (resets on 1st of each month)
-        const startOfMonth = new Date();
-        startOfMonth.setDate(1); // Set to 1st day of current month
-        startOfMonth.setHours(0, 0, 0, 0); // Set to midnight
+        // Calculate start of current calendar month (resets on 1st of each month) - using UTC
+        const now = new Date();
+        const startOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0, 0));
         
         // Filter events created by the user THIS MONTH
         const userEvents = await Event.filter({ 
@@ -72,8 +71,10 @@ export default function CreateEvent() {
         });
         setEventCount(userEvents.length);
         
-        console.log('Start of month:', startOfMonth.toISOString());
+        console.log('Current date:', now.toISOString());
+        console.log('Start of month (UTC):', startOfMonth.toISOString());
         console.log('Events created this month:', userEvents.length);
+        console.log('Event dates:', userEvents.map(e => ({ title: e.title, created: e.created_date })));
 
       } catch (error) {
         console.error("Error loading prerequisites:", error);
