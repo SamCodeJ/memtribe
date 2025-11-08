@@ -98,10 +98,17 @@ export default function MediaModeration() {
       console.log('Media updated successfully:', result);
       setModeratorNotes("");
       await loadData(); // Wait for reload
-      alert(`Media ${status} successfully!`);
+      
+      // Show appropriate success message
+      const statusMessages = {
+        approved: 'Media approved successfully! ✓',
+        rejected: 'Media rejected successfully.',
+        pending: 'Media status changed to pending for review.'
+      };
+      alert(statusMessages[status] || `Media status updated to ${status}!`);
     } catch (error) {
       console.error("Error updating media status:", error);
-      alert(`Failed to ${status} media: ${error.message}`);
+      alert(`Failed to update media status: ${error.message}`);
     }
   };
 
@@ -226,29 +233,77 @@ export default function MediaModeration() {
                         {new Date(media.created_at).toLocaleString()}
                       </div>
 
-                      {media.moderation_status === 'pending' && (
-                        <div className="space-y-3 pt-3">
-                          <div className="flex gap-2">
-                            <Button
-                              onClick={() => handleModeration(media.id, 'approved')}
-                              size="sm"
-                              className="flex-1 bg-green-600 hover:bg-green-700"
-                            >
-                              <Check className="w-4 h-4 mr-1" />
-                              Approve
-                            </Button>
-                            <Button
-                              onClick={() => handleModeration(media.id, 'rejected')}
-                              size="sm"
-                              variant="destructive"
-                              className="flex-1"
-                            >
-                              <X className="w-4 h-4 mr-1" />
-                              Reject
-                            </Button>
-                          </div>
+                      <div className="space-y-3 pt-3 border-t border-slate-200">
+                        {/* Action Buttons - Always show for all statuses */}
+                        <div className="flex flex-col gap-2 pt-3">
+                          {media.moderation_status === 'pending' && (
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() => handleModeration(media.id, 'approved')}
+                                size="sm"
+                                className="flex-1 bg-green-600 hover:bg-green-700"
+                              >
+                                <Check className="w-4 h-4 mr-1" />
+                                Approve
+                              </Button>
+                              <Button
+                                onClick={() => handleModeration(media.id, 'rejected')}
+                                size="sm"
+                                variant="destructive"
+                                className="flex-1"
+                              >
+                                <X className="w-4 h-4 mr-1" />
+                                Reject
+                              </Button>
+                            </div>
+                          )}
+
+                          {media.moderation_status === 'approved' && (
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() => handleModeration(media.id, 'pending')}
+                                size="sm"
+                                variant="outline"
+                                className="flex-1"
+                              >
+                                <Clock className="w-4 h-4 mr-1" />
+                                Mark Pending
+                              </Button>
+                              <Button
+                                onClick={() => handleModeration(media.id, 'rejected')}
+                                size="sm"
+                                variant="destructive"
+                                className="flex-1"
+                              >
+                                <X className="w-4 h-4 mr-1" />
+                                Reject
+                              </Button>
+                            </div>
+                          )}
+
+                          {media.moderation_status === 'rejected' && (
+                            <div className="flex gap-2">
+                              <Button
+                                onClick={() => handleModeration(media.id, 'approved')}
+                                size="sm"
+                                className="flex-1 bg-green-600 hover:bg-green-700"
+                              >
+                                <Check className="w-4 h-4 mr-1" />
+                                Approve
+                              </Button>
+                              <Button
+                                onClick={() => handleModeration(media.id, 'pending')}
+                                size="sm"
+                                variant="outline"
+                                className="flex-1"
+                              >
+                                <Clock className="w-4 h-4 mr-1" />
+                                Mark Pending
+                              </Button>
+                            </div>
+                          )}
                           
-                          {media.file_type === 'image' && (
+                          {media.file_type === 'image' && media.moderation_status === 'pending' && (
                             <Button
                               onClick={() => applyBrandingFilter(media)}
                               disabled={isProcessing[media.id]}
@@ -265,7 +320,7 @@ export default function MediaModeration() {
                             </Button>
                           )}
                         </div>
-                      )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

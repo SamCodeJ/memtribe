@@ -365,7 +365,7 @@ export default function AdminSettings() {
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
-                            {media.moderation_status === 'pending' ? (
+                            {media.moderation_status === 'pending' && (
                               <>
                                 <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleMediaModeration(media.id, 'approved')}>
                                   <Check className="w-4 h-4 mr-1" /> Approve
@@ -374,13 +374,34 @@ export default function AdminSettings() {
                                   <X className="w-4 h-4 mr-1" /> Decline
                                 </Button>
                               </>
-                            ) : (
-                              <Badge className={
-                                media.moderation_status === 'approved' ? 'bg-green-100 text-green-800' :
-                                'bg-red-100 text-red-800'
-                              }>
-                                {media.moderation_status}
-                              </Badge>
+                            )}
+                            
+                            {media.moderation_status === 'approved' && (
+                              <>
+                                <Badge className="bg-green-100 text-green-800 mr-2">
+                                  {media.moderation_status}
+                                </Badge>
+                                <Button size="sm" variant="outline" onClick={() => handleMediaModeration(media.id, 'pending')}>
+                                  Mark Pending
+                                </Button>
+                                <Button size="sm" variant="destructive" onClick={() => handleMediaModeration(media.id, 'rejected')}>
+                                  <X className="w-4 h-4 mr-1" /> Reject
+                                </Button>
+                              </>
+                            )}
+                            
+                            {media.moderation_status === 'rejected' && (
+                              <>
+                                <Badge className="bg-red-100 text-red-800 mr-2">
+                                  {media.moderation_status}
+                                </Badge>
+                                <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleMediaModeration(media.id, 'approved')}>
+                                  <Check className="w-4 h-4 mr-1" /> Approve
+                                </Button>
+                                <Button size="sm" variant="outline" onClick={() => handleMediaModeration(media.id, 'pending')}>
+                                  Mark Pending
+                                </Button>
+                              </>
                             )}
                           </div>
                         </div>
