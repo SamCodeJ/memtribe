@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { getPlanDetails } from "@/components/utils/plans";
 import PhotobookTemplates, { PHOTOBOOK_TEMPLATES } from "@/components/templates/PhotobookTemplates";
 import { createPageUrl } from "@/utils";
+import { generatePhotobookPDF, downloadPDF } from "@/utils/pdfGenerator";
 import {
   BookOpen,
   Download,
@@ -29,6 +30,7 @@ export default function PhotobookCreator() {
   const [selectedMedia, setSelectedMedia] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [generationProgress, setGenerationProgress] = useState(0);
   const [selectedTemplate, setSelectedTemplate] = useState("minimal");
   const [photobookTitle, setPhotobookTitle] = useState("");
   const [photobookDescription, setPhotobookDescription] = useState("");
@@ -106,114 +108,35 @@ export default function PhotobookCreator() {
     }
 
     setIsGenerating(true);
+    setGenerationProgress(0);
+    
     try {
       const selectedPhotos = approvedMedia.filter(media => selectedMedia.includes(media.id));
       
-      // Create HTML photobook
-      const photobookHTML = `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>${photobookTitle}</title>
-          <style>
-            body { 
-              font-family: 'Georgia', serif; 
-              margin: 0; 
-              padding: 20px; 
-              background: ${currentTemplate.preview.includes('white') ? 'white' : '#f8f9fa'}; 
-              line-height: 1.6;
-            }
-            .photobook { max-width: 800px; margin: 0 auto; }
-            .cover { 
-              text-align: center; 
-              padding: 60px 40px; 
-              margin-bottom: 40px; 
-              border-bottom: 3px solid #ddd;
-              ${currentTemplate.id === 'professional' ? 'background: linear-gradient(135deg, #1f2937, #374151); color: white;' : ''}
-            }
-            .cover img {
-              width: 100%;
-              height: auto;
-              max-height: 300px;
-              object-fit: cover;
-              border-radius: 8px;
-              margin-bottom: 30px;
-              box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            }
-            .cover h1 { font-size: 2.5em; margin-bottom: 20px; color: ${currentTemplate.id === 'professional' ? 'white' : '#333'}; }
-            .cover p { font-size: 1.2em; color: ${currentTemplate.id === 'professional' ? '#d1d5db' : '#666'}; }
-            .page { margin-bottom: 40px; page-break-inside: avoid; }
-            .photo-grid { 
-              display: ${currentTemplate.layoutStyle === 'grid' ? 'grid' : 'flex'}; 
-              ${currentTemplate.layoutStyle === 'grid' ? 'grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));' : 'flex-wrap: wrap;'}
-              gap: 20px; 
-              margin-bottom: 40px; 
-            }
-            .photo-item { 
-              ${currentTemplate.layoutStyle === 'creative' ? 'transform: rotate(' + (Math.random() * 4 - 2) + 'deg);' : ''}
-              background: white; 
-              padding: 15px; 
-              border-radius: ${currentTemplate.id === 'scrapbook' ? '15px' : '8px'};
-              box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-              ${currentTemplate.id === 'scrapbook' ? 'border: 3px solid #fbbf24;' : ''}
-            }
-            .photo-item img { width: 100%; height: 250px; object-fit: cover; border-radius: 4px; }
-            .photo-caption { margin-top: 10px; font-style: italic; color: #666; }
-            .photo-meta { font-size: 0.9em; color: #999; margin-top: 5px; }
-            @media print { 
-              body { background: white; } 
-              .page { page-break-after: always; }
-            }
-          </style>
-        </head>
-        <body>
-          <div class="photobook">
-            <div class="cover">
-              ${event.event_image ? `<img src="${event.event_image}" alt="Event Banner" />` : ''}
-              <h1>${photobookTitle}</h1>
-              <p>${photobookDescription}</p>
-              <p><small>Created with MemTribe • ${new Date().toLocaleDateString()}</small></p>
-            </div>
-            
-            <div class="photo-grid">
-              ${selectedPhotos.map(photo => `
-                <div class="photo-item">
-                  <img src="${photo.filtered_url || photo.file_url}" alt="Event memory" />
-                  ${photo.caption ? `<div class="photo-caption">${photo.caption}</div>` : ''}
-                  <div class="photo-meta">By ${photo.uploaded_by || 'Guest'} • ${new Date(photo.created_at).toLocaleDateString()}</div>
-                </div>
-              `).join('')}
-            </div>
-            
-            <div class="page" style="text-align: center; margin-top: 60px;">
-              <h2>Thank You</h2>
-              <p>Thank You to everyone who shared their memories from this special event.</p>
-              <p><em>Created with love using MemTribe</em></p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `;
-
-      // Download the HTML file
-      const blob = new Blob([photobookHTML], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${photobookTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_photobook.html`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      alert('Photobook downloaded! Open the HTML file in your browser and use Print to save as PDF.');
+      // Generate PDF
+      const pdf = await generatePhotobookPDF({
+        title: photobookTitle,
+        description: photobookDescription,
+        photos: selectedPhotos,
+        event: event,
+        template: currentTemplate,
+        onProgress: (progress) => {
+          setGenerationProgress(progress);
+        }
+      });
+      
+      // Download the PDF
+      const filename = `${photobookTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_photobook.pdf`;
+      downloadPDF(pdf, filename);
+      
+      alert('Photobook PDF downloaded successfully! 🎉');
     } catch (error) {
       console.error('Error generating photobook:', error);
-      alert('Failed to generate photobook. Please try again.');
+      alert('Failed to generate photobook. Please try again. Error: ' + error.message);
     }
+    
     setIsGenerating(false);
+    setGenerationProgress(0);
   };
 
   if (isLoading) {
@@ -344,11 +267,16 @@ export default function PhotobookCreator() {
                   className="w-full bg-amber-600 hover:bg-amber-700"
                 >
                   {isGenerating ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                      Generating... {generationProgress}%
+                    </>
                   ) : (
-                    <Download className="w-4 h-4 mr-2" />
+                    <>
+                      <Download className="w-4 h-4 mr-2" />
+                      Generate PDF Photobook
+                    </>
                   )}
-                  Generate Photobook
                 </Button>
               </CardContent>
             </Card>
