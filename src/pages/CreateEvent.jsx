@@ -191,6 +191,11 @@ export default function CreateEvent() {
 
     setIsLoading(true);
     try {
+      console.log('=== CREATE EVENT: Frontend Starting ===');
+      console.log('Current User:', currentUser);
+      console.log('Current Plan:', currentPlan);
+      console.log('Event Count:', eventCount);
+      
       const eventData = {
         ...formData,
         organizer_id: currentUser.id, // Use currentUser from state
@@ -199,7 +204,9 @@ export default function CreateEvent() {
         qr_code: "" // Initialize QR code
       };
 
+      console.log('Creating event with data:', eventData);
       const createdEvent = await Event.create(eventData);
+      console.log('Event created successfully:', createdEvent);
 
       // Generate and save QR code URL for the created event
       const qrCodeUrl = generateQRCodeUrl(createdEvent.id);
@@ -207,16 +214,23 @@ export default function CreateEvent() {
 
       navigate(createPageUrl("MyEvents"));
     } catch (error) {
-      console.error("Error creating event:", error);
+      console.error("=== CREATE EVENT ERROR ===");
+      console.error("Full error object:", error);
+      console.error("Error message:", error.message);
+      console.error("Error response:", error.response);
+      console.error("Response status:", error.response?.status);
+      console.error("Response data:", error.response?.data);
       
       // Check if it's a subscription limit error
       if (error.response?.status === 403 || error.message?.includes('limit')) {
         const errorMessage = error.response?.data?.error || error.message || "Event creation limit reached. Please upgrade your plan.";
+        console.log('LIMIT ERROR DETECTED:', errorMessage);
         alert(errorMessage);
         
         // Reload to refresh the event count and show the upgrade blocker
         window.location.reload();
       } else {
+        console.log('GENERAL ERROR:', error.message);
         alert("Failed to create event. Please try again.");
       }
     }
