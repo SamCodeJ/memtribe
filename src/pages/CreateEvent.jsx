@@ -60,16 +60,20 @@ export default function CreateEvent() {
         const plan = await getPlanDetails(user);
         setCurrentPlan(plan);
 
-        // Calculate one month ago from the current date
-        const oneMonthAgo = new Date();
-        oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+        // Calculate start of current calendar month (resets on 1st of each month)
+        const startOfMonth = new Date();
+        startOfMonth.setDate(1); // Set to 1st day of current month
+        startOfMonth.setHours(0, 0, 0, 0); // Set to midnight
         
-        // Filter events created by the user within the last month
+        // Filter events created by the user THIS MONTH
         const userEvents = await Event.filter({ 
           organizer_id: user.id,
-          created_date: { $gte: oneMonthAgo.toISOString() }
+          created_date: { $gte: startOfMonth.toISOString() }
         });
         setEventCount(userEvents.length);
+        
+        console.log('Start of month:', startOfMonth.toISOString());
+        console.log('Events created this month:', userEvents.length);
 
       } catch (error) {
         console.error("Error loading prerequisites:", error);
