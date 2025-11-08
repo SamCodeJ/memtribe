@@ -62,28 +62,42 @@ export default function PricingManagement() {
   }, []);
 
   const loadData = async () => {
+    console.log("=== PricingManagement: Starting loadData ===");
     try {
+      console.log("Fetching current user...");
       const user = await User.me();
+      console.log("Current user:", user);
       setCurrentUser(user);
       
       if (user.role !== 'admin') {
+        console.log("User is not admin, role:", user.role);
         setIsLoading(false);
         return;
       }
 
+      console.log("User is admin, loading pricing data...");
       const [featuresData, packagesData, packageFeaturesData] = await Promise.all([
         Feature.list("-created_date", { includeInactive: 'true' }),
         Package.list("display_order", { includeInactive: 'true' }),
         PackageFeature.list()
       ]);
 
+      console.log("Features loaded:", featuresData);
+      console.log("Packages loaded:", packagesData);
+      console.log("Package Features loaded:", packageFeaturesData);
+
       setFeatures(featuresData);
       setPackages(packagesData);
       setPackageFeatures(packageFeaturesData);
+      console.log("=== PricingManagement: Data loaded successfully ===");
     } catch (error) {
-      console.error("Error loading pricing data:", error);
+      console.error("=== ERROR loading pricing data ===");
+      console.error("Error details:", error);
+      console.error("Error message:", error.message);
+      console.error("Error stack:", error.stack);
     }
     setIsLoading(false);
+    console.log("Loading complete, isLoading set to false");
   };
 
   const handleFeatureSubmit = async () => {
@@ -202,10 +216,17 @@ export default function PricingManagement() {
   };
 
   if (isLoading) {
+    console.log("Rendering loading state...");
     return <div className="p-8">Loading pricing management...</div>;
   }
 
+  console.log("Loading complete. Current user:", currentUser);
+  console.log("Features count:", features.length);
+  console.log("Packages count:", packages.length);
+
   if (!currentUser || currentUser.role !== 'admin') {
+    console.log("Access denied - User is not admin or not logged in");
+    console.log("Current user:", currentUser);
     return (
       <div className="p-8 text-center">
         <Shield className="w-16 h-16 mx-auto text-red-500 mb-4" />
@@ -214,6 +235,8 @@ export default function PricingManagement() {
       </div>
     );
   }
+
+  console.log("Rendering main pricing management UI...");
 
   return (
     <div className="p-4 md:p-8">
@@ -340,26 +363,33 @@ export default function PricingManagement() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {features.map((feature) => (
-                    <div key={feature.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold">{feature.display_name}</h3>
-                          <Badge variant="outline">{feature.category}</Badge>
-                          <Badge variant={feature.feature_type === 'limit' ? 'default' : feature.feature_type === 'boolean' ? 'secondary' : 'destructive'}>
-                            {feature.feature_type}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-slate-600">{feature.description}</p>
-                        <p className="text-xs text-slate-500 mt-1">Key: {feature.feature_key} • Default: {feature.default_value}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline" onClick={() => editFeature(feature)}>
-                          <Edit className="w-4 h-4" />
-                        </Button>
-                      </div>
+                  {features.length === 0 ? (
+                    <div className="text-center py-8 text-slate-500">
+                      <p className="mb-2">No features available yet.</p>
+                      <p className="text-sm">Click "Add Feature" to create your first feature.</p>
                     </div>
-                  ))}
+                  ) : (
+                    features.map((feature) => (
+                      <div key={feature.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            <h3 className="font-semibold">{feature.display_name}</h3>
+                            <Badge variant="outline">{feature.category}</Badge>
+                            <Badge variant={feature.feature_type === 'limit' ? 'default' : feature.feature_type === 'boolean' ? 'secondary' : 'destructive'}>
+                              {feature.feature_type}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-slate-600">{feature.description}</p>
+                          <p className="text-xs text-slate-500 mt-1">Key: {feature.feature_key} • Default: {feature.default_value}</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" onClick={() => editFeature(feature)}>
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -528,42 +558,49 @@ export default function PricingManagement() {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {packages.map((pkg) => {
-                    const pkgFeatures = packageFeatures.filter(pf => pf.package_id === pkg.id);
-                    return (
-                      <Card key={pkg.id} className={`border-2 ${!pkg.is_active ? 'border-red-300 opacity-75' : pkg.is_popular ? 'border-amber-500' : 'border-slate-200'}`}>
-                        <CardHeader>
-                          <div className="flex items-center justify-between gap-2 flex-wrap">
-                            <CardTitle>{pkg.package_name}</CardTitle>
-                            <div className="flex gap-2">
-                              {pkg.is_popular && <Badge className="bg-amber-500">Popular</Badge>}
-                              {!pkg.is_active && <Badge variant="destructive">Inactive</Badge>}
+                  {packages.length === 0 ? (
+                    <div className="col-span-full text-center py-8 text-slate-500">
+                      <p className="mb-2">No pricing packages available yet.</p>
+                      <p className="text-sm">Click "Create Package" to create your first package.</p>
+                    </div>
+                  ) : (
+                    packages.map((pkg) => {
+                      const pkgFeatures = packageFeatures.filter(pf => pf.package_id === pkg.id);
+                      return (
+                        <Card key={pkg.id} className={`border-2 ${!pkg.is_active ? 'border-red-300 opacity-75' : pkg.is_popular ? 'border-amber-500' : 'border-slate-200'}`}>
+                          <CardHeader>
+                            <div className="flex items-center justify-between gap-2 flex-wrap">
+                              <CardTitle>{pkg.package_name}</CardTitle>
+                              <div className="flex gap-2">
+                                {pkg.is_popular && <Badge className="bg-amber-500">Popular</Badge>}
+                                {!pkg.is_active && <Badge variant="destructive">Inactive</Badge>}
+                              </div>
                             </div>
-                          </div>
-                          <p className="text-2xl font-bold">${pkg.monthly_price}/month</p>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-sm text-slate-600 mb-4">{pkg.description}</p>
-                          <div className="space-y-2 mb-4">
-                            <h4 className="font-medium">Features:</h4>
-                            {pkgFeatures.map((pf) => {
-                              const feature = features.find(f => f.id === pf.feature_id);
-                              return feature ? (
-                                <div key={pf.id} className="text-sm flex justify-between">
-                                  <span>{feature.display_name}</span>
-                                  <span className="font-medium">{pf.is_unlimited ? 'Unlimited' : pf.feature_value}</span>
-                                </div>
-                              ) : null;
-                            })}
-                          </div>
-                          <Button size="sm" variant="outline" onClick={() => editPackage(pkg)} className="w-full">
-                            <Edit className="w-4 h-4 mr-2" />
-                            Edit Package
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
+                            <p className="text-2xl font-bold">${pkg.monthly_price}/month</p>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-sm text-slate-600 mb-4">{pkg.description}</p>
+                            <div className="space-y-2 mb-4">
+                              <h4 className="font-medium">Features:</h4>
+                              {pkgFeatures.map((pf) => {
+                                const feature = features.find(f => f.id === pf.feature_id);
+                                return feature ? (
+                                  <div key={pf.id} className="text-sm flex justify-between">
+                                    <span>{feature.display_name}</span>
+                                    <span className="font-medium">{pf.is_unlimited ? 'Unlimited' : pf.feature_value}</span>
+                                  </div>
+                                ) : null;
+                              })}
+                            </div>
+                            <Button size="sm" variant="outline" onClick={() => editPackage(pkg)} className="w-full">
+                              <Edit className="w-4 h-4 mr-2" />
+                              Edit Package
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      );
+                    })
+                  )}
                 </div>
               </CardContent>
             </Card>
