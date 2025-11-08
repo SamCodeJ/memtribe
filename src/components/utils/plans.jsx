@@ -3,6 +3,7 @@ import { Package, PackageFeature, Feature } from "@/api/index";
 // Fallback default plan in case of any issues.
 const defaultPlan = {
   name: "Starter",
+  slug: "starter",
   events_per_month: 2,
   guests_per_event: 50,
   media_per_event: 100,
@@ -35,6 +36,7 @@ export const getPlanDetails = async (user) => {
     // 4. Build the plan details object
     const planDetails = {
       name: pkg.package_name,
+      slug: pkg.package_slug,
     };
     
     const featureMap = new Map(allFeatures.map(f => [f.id, f]));

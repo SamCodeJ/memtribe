@@ -41,8 +41,21 @@ const PHOTOBOOK_TEMPLATES = [
 export default function PhotobookTemplates({ selectedTemplate, onTemplateSelect, currentPlan }) {
   const canUseTemplate = (template) => {
     const planHierarchy = ["starter", "pro", "business", "enterprise"];
-    const userPlanIndex = planHierarchy.indexOf(currentPlan?.name?.toLowerCase() || "starter");
+    // Use slug if available, otherwise fall back to lowercase name
+    const userPlan = currentPlan?.slug || currentPlan?.name?.toLowerCase() || "starter";
+    const userPlanIndex = planHierarchy.indexOf(userPlan);
     const requiredPlanIndex = planHierarchy.indexOf(template.planRequired);
+    
+    // Debug logging
+    console.log('🔍 Template Check:', {
+      template: template.name,
+      userPlan,
+      currentPlan,
+      userPlanIndex,
+      requiredPlanIndex,
+      canUse: userPlanIndex >= requiredPlanIndex
+    });
+    
     return userPlanIndex >= requiredPlanIndex;
   };
 

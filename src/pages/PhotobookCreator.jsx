@@ -57,6 +57,8 @@ export default function PhotobookCreator() {
         console.log("🔍 DEBUG: File types:", allMedia.map(m => ({ id: m.id, file_type: m.file_type, file_url: m.file_url })));
         
         const plan = await getPlanDetails(organizer);
+        console.log("🔍 DEBUG: Organizer data:", organizer);
+        console.log("🔍 DEBUG: Plan details:", plan);
         setCurrentPlan(plan);
 
         // Store count of all approved media (photos and videos)
