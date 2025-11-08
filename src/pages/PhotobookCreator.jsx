@@ -58,7 +58,10 @@ export default function PhotobookCreator() {
         
         const plan = await getPlanDetails(organizer);
         console.log("🔍 DEBUG: Organizer data:", organizer);
+        console.log("🔍 DEBUG: Organizer subscription_plan field:", organizer?.subscription_plan);
         console.log("🔍 DEBUG: Plan details:", plan);
+        console.log("🔍 DEBUG: Plan slug:", plan?.slug);
+        console.log("🔍 DEBUG: Plan name:", plan?.name);
         setCurrentPlan(plan);
 
         // Store count of all approved media (photos and videos)
@@ -237,6 +240,12 @@ export default function PhotobookCreator() {
                   <Palette className="w-5 h-5 text-amber-600" />
                   Choose Template
                 </CardTitle>
+                {currentPlan && (
+                  <div className="mt-2 text-xs text-slate-500">
+                    <p>Event Organizer's Plan: <span className="font-semibold text-amber-600">{currentPlan.name}</span> ({currentPlan.slug})</p>
+                    <p className="mt-1 text-[10px] text-slate-400">Templates are based on the event owner's subscription</p>
+                  </div>
+                )}
               </CardHeader>
               <CardContent>
                 <PhotobookTemplates

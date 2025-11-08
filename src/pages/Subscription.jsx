@@ -37,13 +37,27 @@ export default function Subscription() {
 
   const handleSelectPlan = async (plan) => {
     if (!currentUser || currentUser.subscription_plan === plan) return;
+    
+    console.log('🔄 Attempting to upgrade plan to:', plan);
+    console.log('🔄 Current user:', currentUser);
+    
     try {
-      await User.updateMyUserData({ subscription_plan: plan });
+      const updatedUser = await User.updateMyUserData({ subscription_plan: plan });
+      console.log('✅ Plan update successful:', updatedUser);
+      
       setCurrentUser(prev => ({...prev, subscription_plan: plan}));
       alert(`You have successfully upgraded to the ${plan.charAt(0).toUpperCase() + plan.slice(1)} plan!`);
+      
+      // Verify the update
+      const verifyUser = await User.me();
+      console.log('✅ Verified plan in database:', verifyUser.subscription_plan);
+      
+      if (verifyUser.subscription_plan !== plan) {
+        console.warn('⚠️ Warning: Database shows different plan:', verifyUser.subscription_plan);
+      }
     } catch (error) {
-      console.error("Error upgrading plan:", error);
-      alert("Failed to upgrade plan. Please try again.");
+      console.error("❌ Error upgrading plan:", error);
+      alert(`Failed to upgrade plan: ${error.message}\n\nPlease try again or contact support.`);
     }
   };
 
