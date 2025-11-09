@@ -29,22 +29,6 @@ const PHOTOBOOK_TEMPLATES = [
     layoutStyle: "simple-grid",
     planRequired: "starter"
   },
-  {
-    id: "casual",
-    name: "Casual",
-    description: "Relaxed and friendly layout for everyday moments",
-    preview: "bg-gradient-to-br from-sky-50 to-blue-50",
-    layoutStyle: "casual",
-    planRequired: "starter"
-  },
-  {
-    id: "family-album",
-    name: "Family Album",
-    description: "Warm and inviting design for family memories",
-    preview: "bg-gradient-to-br from-orange-50 to-red-50",
-    layoutStyle: "family",
-    planRequired: "starter"
-  },
   
   // ===== PRO TIER =====
   {
@@ -72,22 +56,6 @@ const PHOTOBOOK_TEMPLATES = [
     planRequired: "pro"
   },
   {
-    id: "travel-journal",
-    name: "Travel Journal",
-    description: "Adventure-inspired design with map aesthetics",
-    preview: "bg-gradient-to-br from-teal-50 to-cyan-50",
-    layoutStyle: "travel",
-    planRequired: "pro"
-  },
-  {
-    id: "artistic",
-    name: "Artistic",
-    description: "Creative layout with artistic flair",
-    preview: "bg-gradient-to-br from-indigo-50 to-violet-50",
-    layoutStyle: "artistic",
-    planRequired: "pro"
-  },
-  {
     id: "wedding",
     name: "Wedding",
     description: "Romantic layout perfect for wedding memories",
@@ -96,11 +64,11 @@ const PHOTOBOOK_TEMPLATES = [
     planRequired: "pro"
   },
   {
-    id: "portfolio",
-    name: "Portfolio",
-    description: "Professional showcase for creative work",
-    preview: "bg-gradient-to-br from-gray-50 to-zinc-50",
-    layoutStyle: "portfolio",
+    id: "travel-journal",
+    name: "Travel Journal",
+    description: "Adventure-inspired design with map aesthetics",
+    preview: "bg-gradient-to-br from-teal-50 to-cyan-50",
+    layoutStyle: "travel",
     planRequired: "pro"
   },
   
@@ -135,30 +103,6 @@ const PHOTOBOOK_TEMPLATES = [
     description: "Classic yearbook style with captions and dates",
     preview: "bg-gradient-to-br from-blue-100 to-indigo-100",
     layoutStyle: "yearbook",
-    planRequired: "business"
-  },
-  {
-    id: "cinematic",
-    name: "Cinematic",
-    description: "Movie-inspired widescreen layouts",
-    preview: "bg-gradient-to-br from-slate-700 to-gray-800",
-    layoutStyle: "cinematic",
-    planRequired: "business"
-  },
-  {
-    id: "baby-book",
-    name: "Baby Book",
-    description: "Sweet and gentle design for baby milestones",
-    preview: "bg-gradient-to-br from-blue-50 to-purple-50",
-    layoutStyle: "baby",
-    planRequired: "business"
-  },
-  {
-    id: "graduation",
-    name: "Graduation",
-    description: "Celebratory design for graduation memories",
-    preview: "bg-gradient-to-br from-yellow-50 to-amber-50",
-    layoutStyle: "graduation",
     planRequired: "business"
   },
   
@@ -196,43 +140,11 @@ const PHOTOBOOK_TEMPLATES = [
     planRequired: "enterprise"
   },
   {
-    id: "coffee-table",
-    name: "Coffee Table",
-    description: "Large format design worthy of display",
-    preview: "bg-gradient-to-br from-stone-100 to-amber-100",
-    layoutStyle: "coffee-table",
-    planRequired: "enterprise"
-  },
-  {
     id: "fashion",
-    name: "Fashion",
+    name: "Fashion Editorial",
     description: "High-fashion editorial style layouts",
     preview: "bg-gradient-to-br from-black to-gray-900",
     layoutStyle: "fashion",
-    planRequired: "enterprise"
-  },
-  {
-    id: "architectural",
-    name: "Architectural",
-    description: "Clean geometric layouts with precision",
-    preview: "bg-gradient-to-br from-slate-50 to-gray-100",
-    layoutStyle: "architectural",
-    planRequired: "enterprise"
-  },
-  {
-    id: "premium-wedding",
-    name: "Premium Wedding",
-    description: "Ultra-luxurious wedding book with gold foil effects",
-    preview: "bg-gradient-to-br from-pink-100 to-yellow-100",
-    layoutStyle: "premium-wedding",
-    planRequired: "enterprise"
-  },
-  {
-    id: "art-gallery",
-    name: "Art Gallery",
-    description: "Museum-quality presentation for fine art",
-    preview: "bg-gradient-to-br from-white to-gray-50",
-    layoutStyle: "art-gallery",
     planRequired: "enterprise"
   }
 ];
