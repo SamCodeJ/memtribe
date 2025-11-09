@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Check, Lock } from "lucide-react";
 
 const PHOTOBOOK_TEMPLATES = [
+  // ===== STARTER TIER (Free) =====
   {
     id: "minimal",
     name: "Minimal",
@@ -13,6 +14,40 @@ const PHOTOBOOK_TEMPLATES = [
     planRequired: "starter"
   },
   {
+    id: "classic",
+    name: "Classic Album",
+    description: "Traditional photo album style with borders",
+    preview: "bg-gradient-to-br from-amber-50 to-orange-50",
+    layoutStyle: "album",
+    planRequired: "starter"
+  },
+  {
+    id: "simple-grid",
+    name: "Simple Grid",
+    description: "Straightforward grid layout perfect for beginners",
+    preview: "bg-gradient-to-br from-gray-50 to-slate-50",
+    layoutStyle: "simple-grid",
+    planRequired: "starter"
+  },
+  {
+    id: "casual",
+    name: "Casual",
+    description: "Relaxed and friendly layout for everyday moments",
+    preview: "bg-gradient-to-br from-sky-50 to-blue-50",
+    layoutStyle: "casual",
+    planRequired: "starter"
+  },
+  {
+    id: "family-album",
+    name: "Family Album",
+    description: "Warm and inviting design for family memories",
+    preview: "bg-gradient-to-br from-orange-50 to-red-50",
+    layoutStyle: "family",
+    planRequired: "starter"
+  },
+  
+  // ===== PRO TIER =====
+  {
     id: "magazine",
     name: "Magazine", 
     description: "Dynamic layouts with varied photo sizes",
@@ -20,6 +55,56 @@ const PHOTOBOOK_TEMPLATES = [
     layoutStyle: "masonry",
     planRequired: "pro"
   },
+  {
+    id: "modern",
+    name: "Modern Grid",
+    description: "Contemporary grid layout with bold typography",
+    preview: "bg-gradient-to-br from-blue-50 to-cyan-50",
+    layoutStyle: "modern-grid",
+    planRequired: "pro"
+  },
+  {
+    id: "elegant",
+    name: "Elegant",
+    description: "Refined layouts with elegant spacing",
+    preview: "bg-gradient-to-br from-purple-50 to-pink-50",
+    layoutStyle: "elegant",
+    planRequired: "pro"
+  },
+  {
+    id: "travel-journal",
+    name: "Travel Journal",
+    description: "Adventure-inspired design with map aesthetics",
+    preview: "bg-gradient-to-br from-teal-50 to-cyan-50",
+    layoutStyle: "travel",
+    planRequired: "pro"
+  },
+  {
+    id: "artistic",
+    name: "Artistic",
+    description: "Creative layout with artistic flair",
+    preview: "bg-gradient-to-br from-indigo-50 to-violet-50",
+    layoutStyle: "artistic",
+    planRequired: "pro"
+  },
+  {
+    id: "wedding",
+    name: "Wedding",
+    description: "Romantic layout perfect for wedding memories",
+    preview: "bg-gradient-to-br from-rose-50 to-pink-50",
+    layoutStyle: "wedding",
+    planRequired: "pro"
+  },
+  {
+    id: "portfolio",
+    name: "Portfolio",
+    description: "Professional showcase for creative work",
+    preview: "bg-gradient-to-br from-gray-50 to-zinc-50",
+    layoutStyle: "portfolio",
+    planRequired: "pro"
+  },
+  
+  // ===== BUSINESS TIER =====
   {
     id: "scrapbook",
     name: "Scrapbook",
@@ -29,11 +114,125 @@ const PHOTOBOOK_TEMPLATES = [
     planRequired: "business"
   },
   {
+    id: "vintage",
+    name: "Vintage",
+    description: "Nostalgic design with retro aesthetics",
+    preview: "bg-gradient-to-br from-amber-100 to-yellow-100",
+    layoutStyle: "vintage",
+    planRequired: "business"
+  },
+  {
+    id: "storyteller",
+    name: "Storyteller",
+    description: "Narrative style with space for captions",
+    preview: "bg-gradient-to-br from-green-50 to-emerald-50",
+    layoutStyle: "story",
+    planRequired: "business"
+  },
+  {
+    id: "yearbook",
+    name: "Yearbook",
+    description: "Classic yearbook style with captions and dates",
+    preview: "bg-gradient-to-br from-blue-100 to-indigo-100",
+    layoutStyle: "yearbook",
+    planRequired: "business"
+  },
+  {
+    id: "cinematic",
+    name: "Cinematic",
+    description: "Movie-inspired widescreen layouts",
+    preview: "bg-gradient-to-br from-slate-700 to-gray-800",
+    layoutStyle: "cinematic",
+    planRequired: "business"
+  },
+  {
+    id: "baby-book",
+    name: "Baby Book",
+    description: "Sweet and gentle design for baby milestones",
+    preview: "bg-gradient-to-br from-blue-50 to-purple-50",
+    layoutStyle: "baby",
+    planRequired: "business"
+  },
+  {
+    id: "graduation",
+    name: "Graduation",
+    description: "Celebratory design for graduation memories",
+    preview: "bg-gradient-to-br from-yellow-50 to-amber-50",
+    layoutStyle: "graduation",
+    planRequired: "business"
+  },
+  
+  // ===== ENTERPRISE TIER =====
+  {
     id: "professional",
     name: "Professional",
     description: "Sophisticated layouts for corporate events",
     preview: "bg-gradient-to-br from-slate-800 to-slate-900",
     layoutStyle: "formal",
+    planRequired: "enterprise"
+  },
+  {
+    id: "luxury",
+    name: "Luxury",
+    description: "Premium design with golden accents",
+    preview: "bg-gradient-to-br from-yellow-100 to-amber-200",
+    layoutStyle: "luxury",
+    planRequired: "enterprise"
+  },
+  {
+    id: "polaroid",
+    name: "Polaroid",
+    description: "Instant photo style with handwritten feel",
+    preview: "bg-gradient-to-br from-gray-100 to-slate-200",
+    layoutStyle: "polaroid",
+    planRequired: "enterprise"
+  },
+  {
+    id: "collage",
+    name: "Artistic Collage",
+    description: "Creative mix of overlapping photos",
+    preview: "bg-gradient-to-br from-rose-50 to-orange-50",
+    layoutStyle: "collage",
+    planRequired: "enterprise"
+  },
+  {
+    id: "coffee-table",
+    name: "Coffee Table",
+    description: "Large format design worthy of display",
+    preview: "bg-gradient-to-br from-stone-100 to-amber-100",
+    layoutStyle: "coffee-table",
+    planRequired: "enterprise"
+  },
+  {
+    id: "fashion",
+    name: "Fashion",
+    description: "High-fashion editorial style layouts",
+    preview: "bg-gradient-to-br from-black to-gray-900",
+    layoutStyle: "fashion",
+    planRequired: "enterprise"
+  },
+  {
+    id: "architectural",
+    name: "Architectural",
+    description: "Clean geometric layouts with precision",
+    preview: "bg-gradient-to-br from-slate-50 to-gray-100",
+    layoutStyle: "architectural",
+    planRequired: "enterprise"
+  },
+  {
+    id: "premium-wedding",
+    name: "Premium Wedding",
+    description: "Ultra-luxurious wedding book with gold foil effects",
+    preview: "bg-gradient-to-br from-pink-100 to-yellow-100",
+    layoutStyle: "premium-wedding",
+    planRequired: "enterprise"
+  },
+  {
+    id: "art-gallery",
+    name: "Art Gallery",
+    description: "Museum-quality presentation for fine art",
+    preview: "bg-gradient-to-br from-white to-gray-50",
+    layoutStyle: "art-gallery",
     planRequired: "enterprise"
   }
 ];
