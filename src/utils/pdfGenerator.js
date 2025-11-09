@@ -51,6 +51,7 @@ export const generatePhotobookPDF = async ({
   photos,
   event,
   template,
+  backgroundColor = '#FFFFFF',
   onProgress = () => {}
 }) => {
   const pdf = new jsPDF({
@@ -75,29 +76,34 @@ export const generatePhotobookPDF = async ({
     }
   };
   
+  // Helper to convert hex color to RGB
+  const hexToRgb = (hex) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? [
+      parseInt(result[1], 16),
+      parseInt(result[2], 16),
+      parseInt(result[3], 16)
+    ] : [255, 255, 255];
+  };
+  
+  // Helper to determine if color is dark (for text color)
+  const isColorDark = (rgb) => {
+    // Using luminance formula
+    const luminance = (0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]) / 255;
+    return luminance < 0.5;
+  };
+  
   // === COVER PAGE ===
   onProgress(5);
   
-  // Get template styles
-  const getTemplateStyles = (templateId) => {
-    const styles = {
-      'minimal': { coverBg: [255, 255, 255], titleColor: [0, 0, 0], accentColor: [251, 191, 36] },
-      'classic': { coverBg: [255, 251, 235], titleColor: [120, 53, 15], accentColor: [217, 119, 6] },
-      'magazine': { coverBg: [248, 250, 252], titleColor: [15, 23, 42], accentColor: [100, 116, 139] },
-      'modern': { coverBg: [240, 249, 255], titleColor: [8, 47, 73], accentColor: [6, 182, 212] },
-      'elegant': { coverBg: [250, 245, 255], titleColor: [88, 28, 135], accentColor: [168, 85, 247] },
-      'scrapbook': { coverBg: [255, 251, 235], titleColor: [180, 83, 9], accentColor: [251, 191, 36] },
-      'vintage': { coverBg: [254, 243, 199], titleColor: [120, 53, 15], accentColor: [180, 83, 9] },
-      'storyteller': { coverBg: [236, 253, 245], titleColor: [6, 78, 59], accentColor: [16, 185, 129] },
-      'professional': { coverBg: [31, 41, 55], titleColor: [255, 255, 255], accentColor: [251, 191, 36] },
-      'luxury': { coverBg: [254, 243, 199], titleColor: [120, 53, 15], accentColor: [217, 119, 6] },
-      'polaroid': { coverBg: [241, 245, 249], titleColor: [30, 41, 59], accentColor: [100, 116, 139] },
-      'collage': { coverBg: [255, 247, 237], titleColor: [154, 52, 18], accentColor: [249, 115, 22] }
-    };
-    return styles[templateId] || styles['minimal'];
+  // Get template styles using the selected background color
+  const bgRgb = hexToRgb(backgroundColor);
+  const isDark = isColorDark(bgRgb);
+  const templateStyles = {
+    coverBg: bgRgb,
+    titleColor: isDark ? [255, 255, 255] : [0, 0, 0],
+    accentColor: [251, 191, 36] // Keep amber accent
   };
-  
-  const templateStyles = getTemplateStyles(template.id);
   
   // Background for cover
   pdf.setFillColor(...templateStyles.coverBg);

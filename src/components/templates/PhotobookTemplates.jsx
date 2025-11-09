@@ -6,146 +6,162 @@ import { Check, Lock } from "lucide-react";
 const PHOTOBOOK_TEMPLATES = [
   // ===== STARTER TIER (Free) =====
   {
-    id: "minimal",
-    name: "Minimal",
-    description: "Clean layouts with plenty of white space",
-    preview: "bg-white border",
+    id: "grid",
+    name: "Grid Layout",
+    description: "Classic grid - equal sized photos in rows and columns",
     layoutStyle: "grid",
-    planRequired: "starter"
+    planRequired: "starter",
+    previewLayout: (
+      <div className="absolute inset-1 grid grid-cols-2 gap-px">
+        <div className="bg-slate-500 rounded-sm"></div>
+        <div className="bg-slate-500 rounded-sm"></div>
+        <div className="bg-slate-500 rounded-sm"></div>
+        <div className="bg-slate-500 rounded-sm"></div>
+      </div>
+    )
   },
   {
-    id: "classic",
-    name: "Classic Album",
-    description: "Traditional photo album style with borders",
-    preview: "bg-gradient-to-br from-amber-50 to-orange-50",
-    layoutStyle: "album",
-    planRequired: "starter"
-  },
-  {
-    id: "simple-grid",
-    name: "Simple Grid",
-    description: "Straightforward grid layout perfect for beginners",
-    preview: "bg-gradient-to-br from-gray-50 to-slate-50",
-    layoutStyle: "simple-grid",
-    planRequired: "starter"
+    id: "single-large",
+    name: "Single Photo",
+    description: "One large photo per page with caption below",
+    layoutStyle: "single-large",
+    planRequired: "starter",
+    previewLayout: (
+      <div className="absolute inset-1 flex flex-col gap-px">
+        <div className="bg-slate-500 rounded-sm flex-1"></div>
+        <div className="h-1 bg-slate-400 w-3/4"></div>
+      </div>
+    )
   },
   
   // ===== PRO TIER =====
   {
-    id: "magazine",
-    name: "Magazine", 
-    description: "Dynamic layouts with varied photo sizes",
-    preview: "bg-gradient-to-br from-slate-50 to-slate-100",
+    id: "masonry",
+    name: "Masonry", 
+    description: "Pinterest-style varied photo sizes flowing naturally",
     layoutStyle: "masonry",
-    planRequired: "pro"
+    planRequired: "pro",
+    previewLayout: (
+      <div className="absolute inset-1 grid grid-cols-2 gap-px">
+        <div className="bg-slate-500 rounded-sm row-span-2"></div>
+        <div className="bg-slate-500 rounded-sm"></div>
+        <div className="bg-slate-500 rounded-sm"></div>
+      </div>
+    )
   },
   {
-    id: "modern",
-    name: "Modern Grid",
-    description: "Contemporary grid layout with bold typography",
-    preview: "bg-gradient-to-br from-blue-50 to-cyan-50",
-    layoutStyle: "modern-grid",
-    planRequired: "pro"
+    id: "magazine-spread",
+    name: "Magazine Spread",
+    description: "Large feature photo with smaller side images",
+    layoutStyle: "magazine-spread",
+    planRequired: "pro",
+    previewLayout: (
+      <div className="absolute inset-1 flex gap-px">
+        <div className="bg-slate-500 rounded-sm flex-1"></div>
+        <div className="flex flex-col gap-px w-1/3">
+          <div className="bg-slate-500 rounded-sm flex-1"></div>
+          <div className="bg-slate-500 rounded-sm flex-1"></div>
+        </div>
+      </div>
+    )
   },
   {
-    id: "elegant",
-    name: "Elegant",
-    description: "Refined layouts with elegant spacing",
-    preview: "bg-gradient-to-br from-purple-50 to-pink-50",
-    layoutStyle: "elegant",
-    planRequired: "pro"
-  },
-  {
-    id: "wedding",
-    name: "Wedding",
-    description: "Romantic layout perfect for wedding memories",
-    preview: "bg-gradient-to-br from-rose-50 to-pink-50",
-    layoutStyle: "wedding",
-    planRequired: "pro"
-  },
-  {
-    id: "travel-journal",
-    name: "Travel Journal",
-    description: "Adventure-inspired design with map aesthetics",
-    preview: "bg-gradient-to-br from-teal-50 to-cyan-50",
-    layoutStyle: "travel",
-    planRequired: "pro"
+    id: "two-column",
+    name: "Two Column",
+    description: "Two photos side by side on each page",
+    layoutStyle: "two-column",
+    planRequired: "pro",
+    previewLayout: (
+      <div className="absolute inset-1 grid grid-cols-2 gap-px">
+        <div className="bg-slate-500 rounded-sm"></div>
+        <div className="bg-slate-500 rounded-sm"></div>
+      </div>
+    )
   },
   
   // ===== BUSINESS TIER =====
   {
-    id: "scrapbook",
-    name: "Scrapbook",
-    description: "Playful design with decorative elements",
-    preview: "bg-gradient-to-br from-pink-50 to-yellow-50",
-    layoutStyle: "creative",
-    planRequired: "business"
+    id: "polaroid-stack",
+    name: "Polaroid Stack",
+    description: "Photos styled as polaroids with handwritten captions",
+    layoutStyle: "polaroid-stack",
+    planRequired: "business",
+    previewLayout: (
+      <div className="absolute inset-1 flex items-center justify-center">
+        <div className="bg-white border-2 border-slate-400 rounded-sm w-7 h-8 shadow-md transform rotate-3">
+          <div className="bg-slate-500 m-1 h-5"></div>
+        </div>
+      </div>
+    )
   },
   {
-    id: "vintage",
-    name: "Vintage",
-    description: "Nostalgic design with retro aesthetics",
-    preview: "bg-gradient-to-br from-amber-100 to-yellow-100",
-    layoutStyle: "vintage",
-    planRequired: "business"
+    id: "collage",
+    name: "Creative Collage",
+    description: "Overlapping photos with rotation and depth",
+    layoutStyle: "collage",
+    planRequired: "business",
+    previewLayout: (
+      <div className="absolute inset-1 flex items-center justify-center">
+        <div className="bg-slate-500 w-6 h-6 rounded-sm absolute transform rotate-12"></div>
+        <div className="bg-slate-600 w-5 h-5 rounded-sm absolute transform -rotate-6 translate-x-1"></div>
+      </div>
+    )
   },
   {
     id: "storyteller",
     name: "Storyteller",
-    description: "Narrative style with space for captions",
-    preview: "bg-gradient-to-br from-green-50 to-emerald-50",
-    layoutStyle: "story",
-    planRequired: "business"
-  },
-  {
-    id: "yearbook",
-    name: "Yearbook",
-    description: "Classic yearbook style with captions and dates",
-    preview: "bg-gradient-to-br from-blue-100 to-indigo-100",
-    layoutStyle: "yearbook",
-    planRequired: "business"
+    description: "Large caption areas for detailed stories with photos",
+    layoutStyle: "storyteller",
+    planRequired: "business",
+    previewLayout: (
+      <div className="absolute inset-1 flex flex-col gap-px">
+        <div className="h-2 bg-slate-400 rounded w-full"></div>
+        <div className="h-1 bg-slate-400 rounded w-4/5"></div>
+        <div className="bg-slate-500 rounded-sm flex-1 mt-px"></div>
+      </div>
+    )
   },
   
   // ===== ENTERPRISE TIER =====
   {
-    id: "professional",
-    name: "Professional",
-    description: "Sophisticated layouts for corporate events",
-    preview: "bg-gradient-to-br from-slate-800 to-slate-900",
-    layoutStyle: "formal",
-    planRequired: "enterprise"
+    id: "full-bleed",
+    name: "Full Bleed",
+    description: "Edge-to-edge photos with no margins",
+    layoutStyle: "full-bleed",
+    planRequired: "enterprise",
+    previewLayout: (
+      <div className="absolute inset-0">
+        <div className="bg-slate-500 w-full h-full"></div>
+      </div>
+    )
   },
   {
-    id: "luxury",
-    name: "Luxury",
-    description: "Premium design with golden accents",
-    preview: "bg-gradient-to-br from-yellow-100 to-amber-200",
-    layoutStyle: "luxury",
-    planRequired: "enterprise"
+    id: "cinematic",
+    name: "Cinematic",
+    description: "Widescreen format with letterbox styling",
+    layoutStyle: "cinematic",
+    planRequired: "enterprise",
+    previewLayout: (
+      <div className="absolute inset-1 flex items-center">
+        <div className="bg-slate-500 w-full h-3/5 rounded-sm"></div>
+      </div>
+    )
   },
   {
-    id: "polaroid",
-    name: "Polaroid",
-    description: "Instant photo style with handwritten feel",
-    preview: "bg-gradient-to-br from-gray-100 to-slate-200",
-    layoutStyle: "polaroid",
-    planRequired: "enterprise"
-  },
-  {
-    id: "collage",
-    name: "Artistic Collage",
-    description: "Creative mix of overlapping photos",
-    preview: "bg-gradient-to-br from-rose-50 to-orange-50",
-    layoutStyle: "collage",
-    planRequired: "enterprise"
-  },
-  {
-    id: "fashion",
-    name: "Fashion Editorial",
-    description: "High-fashion editorial style layouts",
-    preview: "bg-gradient-to-br from-black to-gray-900",
-    layoutStyle: "fashion",
-    planRequired: "enterprise"
+    id: "editorial",
+    name: "Editorial",
+    description: "High-fashion layout with asymmetric composition",
+    layoutStyle: "editorial",
+    planRequired: "enterprise",
+    previewLayout: (
+      <div className="absolute inset-1 grid grid-rows-3 gap-px">
+        <div className="bg-slate-500 rounded-sm row-span-2"></div>
+        <div className="grid grid-cols-2 gap-px">
+          <div className="bg-slate-500 rounded-sm"></div>
+          <div className="bg-slate-500 rounded-sm"></div>
+        </div>
+      </div>
+    )
   }
 ];
 
@@ -186,27 +202,19 @@ export default function PhotobookTemplates({ selectedTemplate, onTemplateSelect,
           >
             <div className="flex items-center gap-3">
               {/* Template Preview */}
-              <div className={`w-12 h-12 rounded-md flex-shrink-0 ${template.preview} relative overflow-hidden`}>
-                {/* Mock layout preview */}
-                <div className="absolute inset-1 space-y-px">
-                  <div className="h-1 bg-slate-400 rounded w-3/4"></div>
-                  <div className="flex gap-px">
-                    <div className="h-3 w-3 bg-slate-500 rounded-sm"></div>
-                    <div className="h-3 w-4 bg-slate-500 rounded-sm"></div>
-                  </div>
-                  <div className="h-px bg-slate-400 w-full"></div>
-                  <div className="h-px bg-slate-400 w-2/3"></div>
-                </div>
+              <div className="w-14 h-14 rounded-md flex-shrink-0 bg-white border border-slate-200 relative overflow-hidden">
+                {/* Unique layout preview */}
+                {template.previewLayout}
                 
                 {isSelected && (
-                  <div className="absolute top-1 right-1 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center">
-                    <Check className="w-2 h-2 text-white" />
+                  <div className="absolute top-0.5 right-0.5 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center z-10">
+                    <Check className="w-2.5 h-2.5 text-white" />
                   </div>
                 )}
                 
                 {!canUse && (
-                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                    <Lock className="w-3 h-3 text-white" />
+                  <div className="absolute inset-0 bg-black/30 flex items-center justify-center z-10">
+                    <Lock className="w-4 h-4 text-white" />
                   </div>
                 )}
               </div>

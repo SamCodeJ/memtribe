@@ -31,9 +31,10 @@ export default function PhotobookCreator() {
   const [isLoading, setIsLoading] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState(0);
-  const [selectedTemplate, setSelectedTemplate] = useState("minimal");
+  const [selectedTemplate, setSelectedTemplate] = useState("grid");
   const [photobookTitle, setPhotobookTitle] = useState("");
   const [photobookDescription, setPhotobookDescription] = useState("");
+  const [photobookColor, setPhotobookColor] = useState("#FFFFFF");
   const [showPreview, setShowPreview] = useState(false);
 
   const currentTemplate = PHOTOBOOK_TEMPLATES.find(t => t.id === selectedTemplate) || PHOTOBOOK_TEMPLATES[0];
@@ -125,6 +126,7 @@ export default function PhotobookCreator() {
         photos: selectedPhotos,
         event: event,
         template: currentTemplate,
+        backgroundColor: photobookColor,
         onProgress: (progress) => {
           setGenerationProgress(progress);
         }
@@ -238,12 +240,12 @@ export default function PhotobookCreator() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Palette className="w-5 h-5 text-amber-600" />
-                  Choose Template
+                  Choose Layout
                 </CardTitle>
                 {currentPlan && (
                   <div className="mt-2 text-xs text-slate-500">
                     <p>Event Organizer's Plan: <span className="font-semibold text-amber-600">{currentPlan.name}</span> ({currentPlan.slug})</p>
-                    <p className="mt-1 text-[10px] text-slate-400">Templates are based on the event owner's subscription</p>
+                    <p className="mt-1 text-[10px] text-slate-400">Layouts are based on the event owner's subscription</p>
                   </div>
                 )}
               </CardHeader>
@@ -253,6 +255,51 @@ export default function PhotobookCreator() {
                   onTemplateSelect={setSelectedTemplate}
                   currentPlan={currentPlan}
                 />
+              </CardContent>
+            </Card>
+
+            {/* Color Selection */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Palette className="w-5 h-5 text-amber-600" />
+                  Background Color
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <Label htmlFor="color-picker">Choose a color</Label>
+                  <div className="flex items-center gap-3 mt-2">
+                    <input
+                      type="color"
+                      id="color-picker"
+                      value={photobookColor}
+                      onChange={(e) => setPhotobookColor(e.target.value)}
+                      className="w-12 h-12 rounded-md border-2 border-slate-200 cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <Input
+                        value={photobookColor}
+                        onChange={(e) => setPhotobookColor(e.target.value)}
+                        placeholder="#FFFFFF"
+                        className="font-mono"
+                      />
+                    </div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-5 gap-2">
+                  {['#FFFFFF', '#F3F4F6', '#FEF3C7', '#DBEAFE', '#FCE7F3', '#E0E7FF', '#D1FAE5', '#FFE4E6', '#FEF9C3', '#CCFBF1'].map(color => (
+                    <button
+                      key={color}
+                      onClick={() => setPhotobookColor(color)}
+                      className={`w-full h-10 rounded-md border-2 transition-all ${
+                        photobookColor === color ? 'border-amber-500 scale-110' : 'border-slate-200 hover:border-slate-300'
+                      }`}
+                      style={{ backgroundColor: color }}
+                      title={color}
+                    />
+                  ))}
+                </div>
               </CardContent>
             </Card>
 
