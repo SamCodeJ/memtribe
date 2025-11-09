@@ -187,7 +187,7 @@ export default function PhotobookTemplates({ selectedTemplate, onTemplateSelect,
   };
 
   return (
-    <div className="space-y-3">
+    <div className="grid grid-cols-2 gap-3">
       {PHOTOBOOK_TEMPLATES.map((template) => {
         const canUse = canUseTemplate(template);
         const isSelected = selectedTemplate === template.id;
@@ -200,39 +200,39 @@ export default function PhotobookTemplates({ selectedTemplate, onTemplateSelect,
             } ${!canUse ? 'opacity-60 cursor-not-allowed' : ''}`}
             onClick={() => canUse && onTemplateSelect(template.id)}
           >
-            <div className="flex items-center gap-3">
+            <div className="flex flex-col gap-2">
               {/* Template Preview */}
-              <div className="w-14 h-14 rounded-md flex-shrink-0 bg-white border border-slate-200 relative overflow-hidden">
+              <div className="w-full aspect-square rounded-md bg-white border border-slate-200 relative overflow-hidden">
                 {/* Unique layout preview */}
                 {template.previewLayout}
                 
                 {isSelected && (
-                  <div className="absolute top-0.5 right-0.5 w-4 h-4 bg-amber-500 rounded-full flex items-center justify-center z-10">
-                    <Check className="w-2.5 h-2.5 text-white" />
+                  <div className="absolute top-1 right-1 w-5 h-5 bg-amber-500 rounded-full flex items-center justify-center z-10">
+                    <Check className="w-3 h-3 text-white" />
                   </div>
                 )}
                 
                 {!canUse && (
                   <div className="absolute inset-0 bg-black/30 flex items-center justify-center z-10">
-                    <Lock className="w-4 h-4 text-white" />
+                    <Lock className="w-5 h-5 text-white" />
                   </div>
                 )}
               </div>
               
               {/* Template Info */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between mb-1">
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
                   <h3 className="font-semibold text-sm text-slate-900 truncate">{template.name}</h3>
                   <Badge 
                     variant={canUse ? "secondary" : "destructive"}
-                    className="text-xs ml-2 flex-shrink-0"
+                    className="text-[10px] px-1.5 py-0 flex-shrink-0"
                   >
                     {template.planRequired}
                   </Badge>
                 </div>
                 <p className="text-xs text-slate-600 line-clamp-2">{template.description}</p>
                 {!canUse && (
-                  <p className="text-xs text-red-600 mt-1">Upgrade required</p>
+                  <p className="text-xs text-red-600 mt-0.5">Upgrade required</p>
                 )}
               </div>
             </div>
