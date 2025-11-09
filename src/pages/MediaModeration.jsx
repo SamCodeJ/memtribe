@@ -14,7 +14,10 @@ import {
   Image as ImageIcon,
   Video,
   Clock,
-  User
+  User,
+  Download,
+  CheckSquare,
+  Square
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -28,6 +31,7 @@ export default function MediaModeration() {
   const [selectedMedia, setSelectedMedia] = useState(null);
   const [moderatorNotes, setModeratorNotes] = useState("");
   const [activeTab, setActiveTab] = useState("pending");
+  const [selectedForDownload, setSelectedForDownload] = useState([]);
 
   const loadData = useCallback(async () => {
     try {
@@ -112,6 +116,68 @@ export default function MediaModeration() {
     }
   };
 
+  // Download single media
+  const downloadSingleMedia = async (media) => {
+    try {
+      const url = media.filtered_url || media.file_url;
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      const extension = media.file_type === 'image' ? 'jpg' : 'mp4';
+      link.download = `${event.title}_${media.id}.${extension}`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Download failed:', error);
+      alert('Failed to download media. Please try again.');
+    }
+  };
+
+  // Download multiple media
+  const downloadBulkMedia = async () => {
+    if (selectedForDownload.length === 0) {
+      alert('Please select at least one media item to download.');
+      return;
+    }
+
+    const selectedItems = mediaItems.filter(m => selectedForDownload.includes(m.id));
+    
+    for (const media of selectedItems) {
+      await downloadSingleMedia(media);
+      // Add delay between downloads to avoid overwhelming the browser
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    
+    alert(`Successfully downloaded ${selectedItems.length} media item(s)!`);
+  };
+
+  // Toggle selection for a media item
+  const toggleSelection = (mediaId) => {
+    setSelectedForDownload(prev => {
+      if (prev.includes(mediaId)) {
+        return prev.filter(id => id !== mediaId);
+      } else {
+        return [...prev, mediaId];
+      }
+    });
+  };
+
+  // Select all in current tab
+  const selectAllInTab = () => {
+    const allIds = filteredMedia.map(m => m.id);
+    setSelectedForDownload(allIds);
+  };
+
+  // Deselect all
+  const deselectAll = () => {
+    setSelectedForDownload([]);
+  };
+
   const filteredMedia = mediaItems.filter(media => {
     if (activeTab === "all") return true;
     return media.moderation_status === activeTab;
@@ -161,12 +227,47 @@ export default function MediaModeration() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-6">
-            <TabsTrigger value="pending">Pending ({stats.pending})</TabsTrigger>
-            <TabsTrigger value="approved">Approved ({stats.approved})</TabsTrigger>
-            <TabsTrigger value="rejected">Rejected ({stats.rejected})</TabsTrigger>
-            <TabsTrigger value="all">All Media</TabsTrigger>
-          </TabsList>
+          <div className="flex items-center justify-between mb-6">
+            <TabsList>
+              <TabsTrigger value="pending">Pending ({stats.pending})</TabsTrigger>
+              <TabsTrigger value="approved">Approved ({stats.approved})</TabsTrigger>
+              <TabsTrigger value="rejected">Rejected ({stats.rejected})</TabsTrigger>
+              <TabsTrigger value="all">All Media</TabsTrigger>
+            </TabsList>
+            
+            {filteredMedia.length > 0 && (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-slate-600">
+                  {selectedForDownload.length} selected
+                </span>
+                <Button
+                  onClick={selectAllInTab}
+                  size="sm"
+                  variant="outline"
+                  disabled={selectedForDownload.length === filteredMedia.length}
+                >
+                  Select All ({filteredMedia.length})
+                </Button>
+                <Button
+                  onClick={deselectAll}
+                  size="sm"
+                  variant="outline"
+                  disabled={selectedForDownload.length === 0}
+                >
+                  Deselect All
+                </Button>
+                <Button
+                  onClick={downloadBulkMedia}
+                  size="sm"
+                  className="bg-amber-600 hover:bg-amber-700"
+                  disabled={selectedForDownload.length === 0}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download Selected ({selectedForDownload.length})
+                </Button>
+              </div>
+            )}
+          </div>
 
           <TabsContent value={activeTab}>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -210,7 +311,23 @@ export default function MediaModeration() {
                         </Badge>
                       </div>
                       
-                      <div className="absolute top-2 right-2">
+                      <div className="absolute top-2 right-2 flex gap-2">
+                        {/* Selection Checkbox */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleSelection(media.id);
+                          }}
+                          className="bg-white/90 hover:bg-white rounded p-1.5 transition-all"
+                        >
+                          {selectedForDownload.includes(media.id) ? (
+                            <CheckSquare className="w-5 h-5 text-amber-600" />
+                          ) : (
+                            <Square className="w-5 h-5 text-slate-600" />
+                          )}
+                        </button>
+                        
+                        {/* File Type Icon */}
                         {media.file_type === 'image' ? 
                           <ImageIcon className="w-5 h-5 text-white bg-black/50 rounded p-1" /> :
                           <Video className="w-5 h-5 text-white bg-black/50 rounded p-1" />
@@ -319,6 +436,17 @@ export default function MediaModeration() {
                               Apply Branding
                             </Button>
                           )}
+                          
+                          {/* Individual Download Button */}
+                          <Button
+                            onClick={() => downloadSingleMedia(media)}
+                            size="sm"
+                            variant="outline"
+                            className="w-full border-amber-600 text-amber-600 hover:bg-amber-50"
+                          >
+                            <Download className="w-4 h-4 mr-2" />
+                            Download
+                          </Button>
                         </div>
                       </div>
                     </div>
