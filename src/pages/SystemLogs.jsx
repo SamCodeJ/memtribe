@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export default function SystemLogs() {
   const [logs, setLogs] = useState([]);
@@ -52,7 +52,7 @@ export default function SystemLogs() {
         params.append('log_type', filterType);
       }
 
-      const response = await fetch(`${API_URL}/api/admin/logs?${params}`, {
+      const response = await fetch(`${API_URL}/admin/logs?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -77,7 +77,7 @@ export default function SystemLogs() {
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(`${API_URL}/api/admin/logs/stats`, {
+      const response = await fetch(`${API_URL}/admin/logs/stats`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -97,7 +97,7 @@ export default function SystemLogs() {
 
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(`${API_URL}/api/admin/logs/clear`, {
+      const response = await fetch(`${API_URL}/admin/logs/clear`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,

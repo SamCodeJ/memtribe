@@ -21,7 +21,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 const PLAN_ICONS = {
   starter: Sparkles,
@@ -75,7 +75,7 @@ export default function UserSubscriptions() {
         params.append('search', searchQuery);
       }
 
-      const response = await fetch(`${API_URL}/api/admin/users/subscriptions?${params}`, {
+      const response = await fetch(`${API_URL}/admin/users/subscriptions?${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -100,7 +100,7 @@ export default function UserSubscriptions() {
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(`${API_URL}/api/admin/subscriptions/stats`, {
+      const response = await fetch(`${API_URL}/admin/subscriptions/stats`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -125,7 +125,7 @@ export default function UserSubscriptions() {
 
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(`${API_URL}/api/admin/users/${selectedUser.id}/subscription`, {
+      const response = await fetch(`${API_URL}/admin/users/${selectedUser.id}/subscription`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -20,7 +20,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 export default function FinanceManagement() {
   const [financialStats, setFinancialStats] = useState(null);
@@ -57,7 +57,7 @@ export default function FinanceManagement() {
       const token = localStorage.getItem('auth_token');
       
       // Fetch financial statistics
-      const statsResponse = await fetch(`${API_URL}/api/admin/finance/stats`, {
+      const statsResponse = await fetch(`${API_URL}/admin/finance/stats`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -69,7 +69,7 @@ export default function FinanceManagement() {
 
       // Fetch monthly revenue
       const revenueResponse = await fetch(
-        `${API_URL}/api/admin/finance/monthly-revenue?year=${selectedYear}&month=${selectedMonth}`, 
+        `${API_URL}/admin/finance/monthly-revenue?year=${selectedYear}&month=${selectedMonth}`, 
         {
           headers: {
             'Authorization': `Bearer ${token}`
