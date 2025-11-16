@@ -2,6 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { asyncHandler } from '../middleware/errorHandler.js';
+import { sendUserWelcomeEmail } from '../services/email.service.js';
 
 const prisma = new PrismaClient();
 
@@ -55,6 +56,18 @@ export const register = asyncHandler(async (req, res) => {
 
   // Generate token
   const token = generateToken(user.id);
+
+  // Send welcome email to new user
+  try {
+    await sendUserWelcomeEmail({
+      userEmail: user.email,
+      userName: user.full_name
+    });
+    console.log('✉️  Welcome email sent to user:', user.email);
+  } catch (emailError) {
+    // Don't fail the registration if email fails
+    console.error('❌ Failed to send welcome email:', emailError.message);
+  }
 
   res.status(201).json({
     message: 'User registered successfully',

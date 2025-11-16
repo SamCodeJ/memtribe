@@ -169,3 +169,23 @@ model PackageFeature {
   @@map("package_features")
 }
 
+// System Log Model (for admin monitoring)
+model SystemLog {
+  id         String   @id @default(uuid())
+  log_type   String   // info, warning, error, success
+  action     String   // login, register, event_created, media_uploaded, etc.
+  user_id    String?
+  user_email String?
+  message    String   @db.Text
+  ip_address String?
+  user_agent String?
+  metadata   Json?    // Additional JSON data
+  created_at DateTime @default(now())
+
+  @@index([log_type])
+  @@index([action])
+  @@index([user_id])
+  @@index([created_at])
+  @@map("system_logs")
+}
+

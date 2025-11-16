@@ -14,6 +14,7 @@ import featureRoutes from './routes/feature.routes.js';
 import packageFeatureRoutes from './routes/packageFeature.routes.js';
 import integrationRoutes from './routes/integration.routes.js';
 import systemSettingsRoutes from './routes/systemSettings.routes.js';
+import adminRoutes from './routes/admin.routes.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 // Load environment variables
@@ -57,6 +58,7 @@ app.use('/api/features', featureRoutes);
 app.use('/api/package-features', packageFeatureRoutes);
 app.use('/api/integrations', integrationRoutes);
 app.use('/api/system-settings', systemSettingsRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 404 handler
 app.use((req, res) => {

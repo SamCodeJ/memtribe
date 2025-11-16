@@ -16,7 +16,9 @@ import {
   LogOut,
   Image as ImageIcon,
   Camera,
-  DollarSign // Add DollarSign icon
+  DollarSign,
+  FileText,
+  UserCog
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -98,6 +100,18 @@ export default function Layout({ children, currentPageName }) {
       title: "Pricing Management",
       url: createPageUrl("PricingManagement"),
       icon: DollarSign,
+      roles: ["admin"]
+    },
+    {
+      title: "User Subscriptions",
+      url: createPageUrl("UserSubscriptions"),
+      icon: UserCog,
+      roles: ["admin"]
+    },
+    {
+      title: "System Logs",
+      url: createPageUrl("SystemLogs"),
+      icon: FileText,
       roles: ["admin"]
     }
   ];

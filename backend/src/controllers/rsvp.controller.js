@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
 import { asyncHandler } from '../middleware/errorHandler.js';
+import { sendGuestWelcomeEmail } from '../services/email.service.js';
 
 const prisma = new PrismaClient();
 
@@ -59,6 +60,24 @@ export const createRSVP = asyncHandler(async (req, res) => {
       }
     }
   });
+
+  // Send welcome email to guest
+  try {
+    const uploadLink = `${process.env.CLIENT_URL}/events/${rsvp.event_id}/upload`;
+    
+    await sendGuestWelcomeEmail({
+      guestEmail: rsvp.guest_email,
+      guestName: rsvp.guest_name,
+      eventTitle: rsvp.event.title,
+      eventDate: rsvp.event.start_date,
+      eventLocation: rsvp.event.location,
+      uploadLink
+    });
+    console.log('✉️  Welcome email sent to guest:', rsvp.guest_email);
+  } catch (emailError) {
+    // Don't fail the RSVP if email fails
+    console.error('❌ Failed to send welcome email:', emailError.message);
+  }
 
   res.status(201).json(rsvp);
 });

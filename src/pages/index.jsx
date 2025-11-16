@@ -30,6 +30,10 @@ import Subscription from "./Subscription";
 
 import PricingManagement from "./PricingManagement";
 
+import SystemLogs from "./SystemLogs";
+
+import UserSubscriptions from "./UserSubscriptions";
+
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
 import Login from "./Login";
@@ -67,6 +71,10 @@ const PAGES = {
     Subscription: Subscription,
     
     PricingManagement: PricingManagement,
+    
+    SystemLogs: SystemLogs,
+    
+    UserSubscriptions: UserSubscriptions,
     
     Login: Login,
     
@@ -128,6 +136,10 @@ function PagesContent() {
                 <Route path="/Subscription" element={<Subscription />} />
                 
                 <Route path="/PricingManagement" element={<PricingManagement />} />
+                
+                <Route path="/SystemLogs" element={<SystemLogs />} />
+                
+                <Route path="/UserSubscriptions" element={<UserSubscriptions />} />
                 
                 <Route path="/login" element={<Login />} />
                 
