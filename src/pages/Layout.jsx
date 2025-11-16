@@ -18,7 +18,8 @@ import {
   Camera,
   DollarSign,
   FileText,
-  UserCog
+  UserCog,
+  TrendingUp
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -112,6 +113,12 @@ export default function Layout({ children, currentPageName }) {
       title: "System Logs",
       url: createPageUrl("SystemLogs"),
       icon: FileText,
+      roles: ["admin"]
+    },
+    {
+      title: "Finance Management",
+      url: createPageUrl("FinanceManagement"),
+      icon: TrendingUp,
       roles: ["admin"]
     }
   ];

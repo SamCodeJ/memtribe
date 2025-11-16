@@ -34,6 +34,8 @@ import SystemLogs from "./SystemLogs";
 
 import UserSubscriptions from "./UserSubscriptions";
 
+import FinanceManagement from "./FinanceManagement";
+
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
 import Login from "./Login";
@@ -75,6 +77,8 @@ const PAGES = {
     SystemLogs: SystemLogs,
     
     UserSubscriptions: UserSubscriptions,
+    
+    FinanceManagement: FinanceManagement,
     
     Login: Login,
     
@@ -140,6 +144,8 @@ function PagesContent() {
                 <Route path="/SystemLogs" element={<SystemLogs />} />
                 
                 <Route path="/UserSubscriptions" element={<UserSubscriptions />} />
+                
+                <Route path="/FinanceManagement" element={<FinanceManagement />} />
                 
                 <Route path="/login" element={<Login />} />
                 

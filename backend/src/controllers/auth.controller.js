@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import { sendUserWelcomeEmail } from '../services/email.service.js';
+import LoggerService from '../services/logger.service.js';
 
 const prisma = new PrismaClient();
 
@@ -69,6 +70,19 @@ export const register = asyncHandler(async (req, res) => {
     console.error('❌ Failed to send welcome email:', emailError.message);
   }
 
+  // Log successful registration
+  await LoggerService.success(
+    'user_registered',
+    `New user registered: ${user.email}`,
+    {
+      user_id: user.id,
+      user_email: user.email,
+      ip_address: req.ip,
+      user_agent: req.get('user-agent'),
+      metadata: { subscription_plan: user.subscription_plan }
+    }
+  );
+
   res.status(201).json({
     message: 'User registered successfully',
     user,
@@ -88,6 +102,16 @@ export const login = asyncHandler(async (req, res) => {
   });
 
   if (!user) {
+    // Log failed login attempt
+    await LoggerService.warning(
+      'login_failed',
+      `Failed login attempt for non-existent user: ${email}`,
+      {
+        user_email: email,
+        ip_address: req.ip,
+        user_agent: req.get('user-agent')
+      }
+    );
     return res.status(401).json({ error: 'Invalid email or password' });
   }
 
@@ -95,11 +119,34 @@ export const login = asyncHandler(async (req, res) => {
   const isValidPassword = await bcrypt.compare(password, user.password);
 
   if (!isValidPassword) {
+    // Log failed login attempt
+    await LoggerService.warning(
+      'login_failed',
+      `Failed login attempt - invalid password for: ${email}`,
+      {
+        user_id: user.id,
+        user_email: email,
+        ip_address: req.ip,
+        user_agent: req.get('user-agent')
+      }
+    );
     return res.status(401).json({ error: 'Invalid email or password' });
   }
 
   // Generate token
   const token = generateToken(user.id);
+
+  // Log successful login
+  await LoggerService.success(
+    'user_login',
+    `User logged in: ${user.email}`,
+    {
+      user_id: user.id,
+      user_email: user.email,
+      ip_address: req.ip,
+      user_agent: req.get('user-agent')
+    }
+  );
 
   // Return user without password
   const { password: _, ...userWithoutPassword } = user;

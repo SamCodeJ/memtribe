@@ -12,14 +12,19 @@ datasource db {
 
 // User Model
 model User {
-  id                String   @id @default(uuid())
-  email             String   @unique
-  password          String
-  full_name         String
-  role              String   @default("user") // user, admin
-  subscription_plan String   @default("starter") // starter, pro, business, enterprise
-  created_at        DateTime @default(now())
-  updated_at        DateTime @updatedAt
+  id                     String    @id @default(uuid())
+  email                  String    @unique
+  password               String
+  full_name              String
+  role                   String    @default("user") // user, admin
+  subscription_plan      String    @default("starter") // starter, pro, business, enterprise
+  subscription_status    String    @default("active") // active, cancelled, expired
+  subscription_start     DateTime? // When subscription started
+  subscription_end       DateTime? // When subscription ends (for cancelled)
+  last_payment_date      DateTime? // Last payment received
+  next_billing_date      DateTime? // Next billing date
+  created_at             DateTime  @default(now())
+  updated_at             DateTime  @updatedAt
 
   // Relations
   events Event[]

@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { asyncHandler } from '../middleware/errorHandler.js';
 import QRCode from 'qrcode';
+import LoggerService from '../services/logger.service.js';
 
 const prisma = new PrismaClient();
 
@@ -141,6 +142,24 @@ export const createEvent = asyncHandler(async (req, res) => {
     
     event.qr_code = qrCodeDataUrl;
   }
+
+  // Log event creation
+  await LoggerService.success(
+    'event_created',
+    `Event created: "${event.title}" by ${user.email}`,
+    {
+      user_id: user.id,
+      user_email: user.email,
+      ip_address: req.ip,
+      user_agent: req.get('user-agent'),
+      metadata: { 
+        event_id: event.id, 
+        event_title: event.title,
+        event_type: event.event_type,
+        subscription_plan: user.subscription_plan
+      }
+    }
+  );
 
   res.status(201).json(event);
 });
@@ -343,6 +362,22 @@ export const deleteEvent = asyncHandler(async (req, res) => {
   await prisma.event.delete({
     where: { id }
   });
+
+  // Log event deletion
+  await LoggerService.info(
+    'event_deleted',
+    `Event deleted: "${existingEvent.title}" by ${req.user.email}`,
+    {
+      user_id: req.user.id,
+      user_email: req.user.email,
+      ip_address: req.ip,
+      user_agent: req.get('user-agent'),
+      metadata: { 
+        event_id: id,
+        event_title: existingEvent.title
+      }
+    }
+  );
 
   res.json({ message: 'Event deleted successfully' });
 });
