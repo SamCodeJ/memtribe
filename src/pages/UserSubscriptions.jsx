@@ -60,7 +60,7 @@ export default function UserSubscriptions() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('auth_token');
       
       const params = new URLSearchParams({
         limit,
@@ -99,7 +99,7 @@ export default function UserSubscriptions() {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('auth_token');
       const response = await fetch(`${API_URL}/api/admin/subscriptions/stats`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -124,7 +124,7 @@ export default function UserSubscriptions() {
     if (!selectedUser || !newPlan) return;
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('auth_token');
       const response = await fetch(`${API_URL}/api/admin/users/${selectedUser.id}/subscription`, {
         method: 'PUT',
         headers: {

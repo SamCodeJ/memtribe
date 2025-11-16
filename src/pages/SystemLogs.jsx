@@ -41,7 +41,7 @@ export default function SystemLogs() {
   const fetchLogs = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('auth_token');
       
       const params = new URLSearchParams({
         limit,
@@ -76,7 +76,7 @@ export default function SystemLogs() {
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('auth_token');
       const response = await fetch(`${API_URL}/api/admin/logs/stats`, {
         headers: {
           'Authorization': `Bearer ${token}`
@@ -96,7 +96,7 @@ export default function SystemLogs() {
     if (!confirm('Are you sure you want to clear logs older than 30 days?')) return;
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('auth_token');
       const response = await fetch(`${API_URL}/api/admin/logs/clear`, {
         method: 'POST',
         headers: {
