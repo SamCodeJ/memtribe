@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getPlanDetails } from "@/components/utils/plans"; // Updated import
 import SlideshowTemplates, { SLIDESHOW_TEMPLATES } from "@/components/templates/SlideshowTemplates";
+import { generateSlideshowPDF, downloadPDF } from "@/utils/slideshowPdfGenerator";
 import {
   Play,
   Pause,
@@ -28,6 +29,7 @@ export default function EventSlideshow() {
   const [showTemplateSelector, setShowTemplateSelector] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState("classic");
   const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
 
   const { slideDuration, refreshInterval } = useMemo(() => {
     // Provide default values if eventPlan is not yet loaded
@@ -328,11 +330,16 @@ export default function EventSlideshow() {
                 className="bg-white/10 border-white/20 text-white hover:bg-white/20"
               >
                 {isDownloading ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+                    {Math.round(downloadProgress)}%
+                  </>
                 ) : (
-                  <Download className="w-4 h-4 mr-2" />
+                  <>
+                    <Download className="w-4 h-4 mr-2" />
+                    Download PDF
+                  </>
                 )}
-                Download
               </Button>
             </div>
             
