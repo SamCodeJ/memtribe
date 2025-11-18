@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { getPlanDetails } from "@/components/utils/plans"; // Updated import
 import SlideshowTemplates, { SLIDESHOW_TEMPLATES } from "@/components/templates/SlideshowTemplates";
-import { generateSlideshowPDF, downloadPDF } from "@/utils/slideshowPdfGenerator";
+import { generateSlideshowVideo, downloadVideo } from "@/utils/videoGenerator";
 import {
   Play,
   Pause,
@@ -153,105 +153,38 @@ export default function EventSlideshow() {
   };
 
   const downloadSlideshow = async () => {
-    setIsDownloading(true);
-    try {
-      // Create a simple HTML slideshow that can be saved
-      const slideshowHTML = `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-          <meta charset="UTF-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>${event.title} - Slideshow</title>
-          <style>
-            body { margin: 0; font-family: Arial, sans-serif; background: ${currentTemplate.preview.includes('gradient') ? 'linear-gradient(135deg, #1e293b, #0f172a)' : '#1e293b'}; }
-            .slideshow { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
-            .slide { display: none; position: absolute; width: 100%; height: 100%; }
-            .slide.active { display: flex; align-items: center; justify-content: center; }
-            .slide img, .slide video { max-width: 100%; max-height: 100%; object-fit: contain; }
-            .overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); color: white; padding: 20px; }
-            .controls { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; }
-            .btn { background: rgba(255,255,255,0.2); border: none; color: white; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
-            .btn:hover { background: rgba(255,255,255,0.3); }
-          </style>
-        </head>
-        <body>
-          <div class="slideshow">
-            ${approvedMedia.map((media, index) => `
-              <div class="slide ${index === 0 ? 'active' : ''}" data-index="${index}">
-                ${media.file_type === 'image'
-                  ? `<img src="${media.filtered_url || media.file_url}" alt="Event memory" />`
-                  : `<video src="${media.file_url}" controls muted />`
-                }
-                <div class="overlay">
-                  <h3>${media.caption || ''}</h3>
-                  <p>By ${media.uploaded_by || 'Guest'} • ${new Date(media.created_at).toLocaleDateString()}</p>
-                </div>
-              </div>
-            `).join('')}
-            <div class="controls">
-              <button class="btn" onclick="prevSlide()">&#x2B8C; Previous</button>
-              <button class="btn" onclick="togglePlay()" id="playBtn">&#x23F8; Pause</button>
-              <button class="btn" onclick="nextSlide()">Next &#x2B8D;</button>
-            </div>
-          </div>
-          <script>
-            let currentSlide = 0;
-            let isPlaying = true;
-            let interval;
-            
-            function showSlide(n) {
-              const slides = document.querySelectorAll('.slide');
-              slides.forEach(slide => slide.classList.remove('active'));
-              slides[n].classList.add('active');
-            }
-            
-            function nextSlide() {
-              currentSlide = (currentSlide + 1) % ${approvedMedia.length};
-              showSlide(currentSlide);
-            }
-            
-            function prevSlide() {
-              currentSlide = currentSlide === 0 ? ${approvedMedia.length - 1} : currentSlide - 1;
-              showSlide(currentSlide);
-            }
-            
-            function togglePlay() {
-              const btn = document.getElementById('playBtn');
-              if (isPlaying) {
-                clearInterval(interval);
-                btn.textContent = '&#x23F5; Play';
-              } else {
-                interval = setInterval(nextSlide, ${slideDuration});
-                btn.textContent = '&#x23F8; Pause';
-              }
-              isPlaying = !isPlaying;
-            }
-            
-            // Auto-start slideshow
-            interval = setInterval(nextSlide, ${slideDuration});
-          </script>
-        </body>
-        </html>
-      `;
-      
-      // Create and download the file
-      const blob = new Blob([slideshowHTML], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${event.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_slideshow.html`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      
-      alert('Slideshow downloaded! Open the HTML file in your browser to view.');
-    } catch (error) {
-      console.error('Error downloading slideshow:', error);
-      alert('Failed to download slideshow. Please try again.');
+    if (approvedMedia.length === 0) {
+      alert("No media available to create slideshow.");
+      return;
     }
+
+    setIsDownloading(true);
+    setDownloadProgress(0);
+    
+    try {
+      // Generate video slideshow
+      const videoBlob = await generateSlideshowVideo({
+        event: event,
+        media: approvedMedia,
+        template: selectedTemplate,
+        slideDuration: slideDuration / 1000, // Convert ms to seconds
+        onProgress: (progress) => {
+          setDownloadProgress(progress);
+        }
+      });
+      
+      // Download the video
+      const filename = `${event.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_slideshow.mp4`;
+      downloadVideo(videoBlob, filename);
+      
+      alert('Slideshow video downloaded successfully! 🎉');
+    } catch (error) {
+      console.error('Error generating slideshow:', error);
+      alert('Failed to generate slideshow video. Please try again. Error: ' + error.message);
+    }
+    
     setIsDownloading(false);
+    setDownloadProgress(0);
   };
 
   useEffect(() => {
@@ -337,7 +270,7 @@ export default function EventSlideshow() {
                 ) : (
                   <>
                     <Download className="w-4 h-4 mr-2" />
-                    Download PDF
+                    Download Video
                   </>
                 )}
               </Button>
