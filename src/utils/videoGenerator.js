@@ -63,11 +63,9 @@ async function loadFFmpeg(onProgress) {
   if (!ffmpegInstance) {
     ffmpegInstance = new FFmpeg();
   }
-
-  const baseURL = 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd';
   
   ffmpegInstance.on('log', ({ message }) => {
-    console.log(message);
+    console.log('[FFmpeg]', message);
   });
   
   ffmpegInstance.on('progress', ({ progress }) => {
@@ -78,17 +76,68 @@ async function loadFFmpeg(onProgress) {
     }
   });
 
-  try {
-    await ffmpegInstance.load({
-      coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
-      wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-    });
-    isFFmpegLoaded = true;
-    return ffmpegInstance;
-  } catch (error) {
-    console.error('Error loading FFmpeg:', error);
-    throw new Error('Failed to load video encoder. Please refresh and try again.');
+  // Try multiple CDN configurations
+  const loadConfigs = [
+    // Config 1: unpkg with core-mt (multi-threaded)
+    {
+      name: 'unpkg (multi-threaded)',
+      baseURL: 'https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/esm',
+      useCore: true
+    },
+    // Config 2: jsdelivr with core-mt
+    {
+      name: 'jsdelivr (multi-threaded)',
+      baseURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.6/dist/esm',
+      useCore: true
+    },
+    // Config 3: unpkg with regular core (fallback)
+    {
+      name: 'unpkg (single-threaded)',
+      baseURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd',
+      useCore: false
+    },
+    // Config 4: jsdelivr with regular core
+    {
+      name: 'jsdelivr (single-threaded)',
+      baseURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd',
+      useCore: false
+    }
+  ];
+
+  // Try each configuration
+  for (const config of loadConfigs) {
+    try {
+      console.log(`Attempting to load FFmpeg from: ${config.name}`);
+      
+      const coreURL = await toBlobURL(`${config.baseURL}/ffmpeg-core.js`, 'text/javascript');
+      const wasmURL = await toBlobURL(`${config.baseURL}/ffmpeg-core.wasm`, 'application/wasm');
+      
+      const loadConfig = {
+        coreURL,
+        wasmURL,
+      };
+      
+      // Add worker URL if using multi-threaded version
+      if (config.useCore) {
+        try {
+          loadConfig.workerURL = await toBlobURL(`${config.baseURL}/ffmpeg-core.worker.js`, 'text/javascript');
+        } catch (e) {
+          console.warn('Worker not available, falling back to single-threaded');
+        }
+      }
+      
+      await ffmpegInstance.load(loadConfig);
+      isFFmpegLoaded = true;
+      console.log(`✅ FFmpeg loaded successfully from: ${config.name}`);
+      return ffmpegInstance;
+    } catch (error) {
+      console.warn(`❌ Failed to load from ${config.name}:`, error.message);
+      // Try next configuration
+    }
   }
+  
+  // If all configurations failed
+  throw new Error('Failed to load video encoder from all sources. Please check your internet connection and try again.');
 }
 
 /**
@@ -394,6 +443,24 @@ function drawTitleFrame(canvas, ctx, event, template) {
 }
 
 /**
+ * Check browser compatibility
+ */
+function checkBrowserCompatibility() {
+  // Check for WebAssembly support
+  if (typeof WebAssembly === 'undefined') {
+    throw new Error('Your browser does not support WebAssembly. Please use a modern browser (Chrome 91+, Firefox 89+, Safari 15+).');
+  }
+
+  // Check for SharedArrayBuffer (required for FFmpeg.wasm multi-threading)
+  if (typeof SharedArrayBuffer === 'undefined') {
+    console.warn('SharedArrayBuffer not available. Video generation may be slower.');
+    // Don't throw error, it can still work without it
+  }
+
+  return true;
+}
+
+/**
  * Generate slideshow video
  */
 export async function generateSlideshowVideo({
@@ -405,6 +472,13 @@ export async function generateSlideshowVideo({
 }) {
   if (!media || media.length === 0) {
     throw new Error('No media available to create slideshow');
+  }
+
+  // Check browser compatibility first
+  try {
+    checkBrowserCompatibility();
+  } catch (error) {
+    throw error;
   }
 
   const canvas = document.createElement('canvas');
