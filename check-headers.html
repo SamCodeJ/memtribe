@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FFmpeg.wasm Headers Check</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .check {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .success { border-left: 4px solid #4caf50; }
+        .error { border-left: 4px solid #f44336; }
+        .warning { border-left: 4px solid #ff9800; }
+        h1 { color: #333; }
+        .icon { font-size: 24px; margin-right: 10px; }
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        button {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        button:hover { background: #1976d2; }
+        .details {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 FFmpeg.wasm Requirements Check</h1>
+    <p>This page checks if your server has the required headers for video generation.</p>
+    
+    <button onclick="runChecks()">🚀 Run Checks</button>
+    
+    <div id="results"></div>
+
+    <script>
+        async function runChecks() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Running checks...</p>';
+            
+            let html = '';
+            
+            // Check 1: WebAssembly Support
+            html += '<div class="check ' + (typeof WebAssembly !== 'undefined' ? 'success' : 'error') + '">';
+            html += '<span class="icon">' + (typeof WebAssembly !== 'undefined' ? '✅' : '❌') + '</span>';
+            html += '<strong>WebAssembly Support</strong><br>';
+            html += typeof WebAssembly !== 'undefined' 
+                ? 'Your browser supports WebAssembly ✅' 
+                : 'Your browser does NOT support WebAssembly ❌<br>Please use Chrome 91+, Firefox 89+, or Safari 15+';
+            html += '</div>';
+            
+            // Check 2: SharedArrayBuffer
+            html += '<div class="check ' + (typeof SharedArrayBuffer !== 'undefined' ? 'success' : 'warning') + '">';
+            html += '<span class="icon">' + (typeof SharedArrayBuffer !== 'undefined' ? '✅' : '⚠️') + '</span>';
+            html += '<strong>SharedArrayBuffer Support</strong><br>';
+            html += typeof SharedArrayBuffer !== 'undefined'
+                ? 'SharedArrayBuffer is available ✅ (Faster video generation)'
+                : 'SharedArrayBuffer is NOT available ⚠️<br>Video generation will still work but be slower.<br>To enable it, add CORS headers to your server.';
+            html += '</div>';
+            
+            // Check 3: Fetch headers
+            try {
+                const response = await fetch(window.location.href);
+                const coep = response.headers.get('cross-origin-embedder-policy');
+                const coop = response.headers.get('cross-origin-opener-policy');
+                
+                html += '<div class="check ' + (coep && coop ? 'success' : 'error') + '">';
+                html += '<span class="icon">' + (coep && coop ? '✅' : '❌') + '</span>';
+                html += '<strong>CORS Headers</strong><br>';
+                
+                if (coep && coop) {
+                    html += 'All required headers are present ✅<br>';
+                    html += '<div class="details">';
+                    html += 'Cross-Origin-Embedder-Policy: <code>' + coep + '</code><br>';
+                    html += 'Cross-Origin-Opener-Policy: <code>' + coop + '</code>';
+                    html += '</div>';
+                } else {
+                    html += '❌ Missing required CORS headers!<br><br>';
+                    html += '<strong>Current headers:</strong><br>';
+                    html += '<div class="details">';
+                    html += 'Cross-Origin-Embedder-Policy: <code>' + (coep || 'NOT SET ❌') + '</code><br>';
+                    html += 'Cross-Origin-Opener-Policy: <code>' + (coop || 'NOT SET ❌') + '</code><br><br>';
+                    html += '<strong>Required values:</strong><br>';
+                    html += 'Cross-Origin-Embedder-Policy: <code>require-corp</code><br>';
+                    html += 'Cross-Origin-Opener-Policy: <code>same-origin</code>';
+                    html += '</div>';
+                }
+                html += '</div>';
+                
+            } catch (error) {
+                html += '<div class="check error">';
+                html += '<span class="icon">❌</span>';
+                html += '<strong>Headers Check Failed</strong><br>';
+                html += 'Could not check headers: ' + error.message;
+                html += '</div>';
+            }
+            
+            // Check 4: CDN Access
+            html += '<div class="check warning">';
+            html += '<span class="icon">📡</span>';
+            html += '<strong>Testing CDN Access...</strong><br>';
+            html += '<div class="details" id="cdn-results">Checking...</div>';
+            html += '</div>';
+            
+            results.innerHTML = html;
+            
+            // Test CDN access
+            const cdnResults = document.getElementById('cdn-results');
+            let cdnHtml = '';
+            
+            const cdns = [
+                'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
+                'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js'
+            ];
+            
+            for (const cdn of cdns) {
+                try {
+                    const response = await fetch(cdn, { method: 'HEAD' });
+                    cdnHtml += (response.ok ? '✅' : '❌') + ' ' + cdn + '<br>';
+                } catch (error) {
+                    cdnHtml += '❌ ' + cdn + ' (blocked or offline)<br>';
+                }
+            }
+            
+            cdnResults.innerHTML = cdnHtml;
+            
+            // Final recommendation
+            const hasWebAssembly = typeof WebAssembly !== 'undefined';
+            const hasSharedArrayBuffer = typeof SharedArrayBuffer !== 'undefined';
+            
+            html += '<div class="check ' + (hasWebAssembly && hasSharedArrayBuffer ? 'success' : 'error') + '">';
+            html += '<h3>📋 Summary</h3>';
+            if (hasWebAssembly && hasSharedArrayBuffer) {
+                html += '✅ <strong>Your system is ready for video generation!</strong><br>';
+                html += 'All requirements are met. Video generation should work.';
+            } else {
+                html += '❌ <strong>Action Required:</strong><br><br>';
+                if (!hasWebAssembly) {
+                    html += '1. Update your browser to a modern version<br>';
+                }
+                if (!hasSharedArrayBuffer) {
+                    html += '2. Add CORS headers to your server configuration<br>';
+                    html += '   - Cross-Origin-Embedder-Policy: require-corp<br>';
+                    html += '   - Cross-Origin-Opener-Policy: same-origin<br><br>';
+                    html += '<strong>For Nginx:</strong> Add to server block and restart<br>';
+                    html += '<strong>For Apache:</strong> Add to .htaccess file<br>';
+                }
+            }
+            html += '</div>';
+            
+            results.innerHTML = html;
+        }
+        
+        // Auto-run on load
+        window.onload = () => runChecks();
+    </script>
+</body>
+</html>
+

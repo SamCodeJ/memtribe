@@ -108,6 +108,7 @@ async function loadFFmpeg(onProgress) {
   for (const config of loadConfigs) {
     try {
       console.log(`Attempting to load FFmpeg from: ${config.name}`);
+      console.log(`URL: ${config.baseURL}`);
       
       const coreURL = await toBlobURL(`${config.baseURL}/ffmpeg-core.js`, 'text/javascript');
       const wasmURL = await toBlobURL(`${config.baseURL}/ffmpeg-core.wasm`, 'application/wasm');
@@ -131,13 +132,30 @@ async function loadFFmpeg(onProgress) {
       console.log(`✅ FFmpeg loaded successfully from: ${config.name}`);
       return ffmpegInstance;
     } catch (error) {
-      console.warn(`❌ Failed to load from ${config.name}:`, error.message);
+      console.error(`❌ Failed to load from ${config.name}:`, error);
+      console.error('Error details:', {
+        message: error.message,
+        name: error.name,
+        stack: error.stack
+      });
       // Try next configuration
     }
   }
   
   // If all configurations failed
-  throw new Error('Failed to load video encoder from all sources. Please check your internet connection and try again.');
+  const errorMsg = 'Failed to load video encoder. This usually means:\n' +
+    '1. Your server needs CORS headers (Cross-Origin-Embedder-Policy and Cross-Origin-Opener-Policy)\n' +
+    '2. Check browser console for detailed errors\n' +
+    '3. Ensure you\'re using a modern browser (Chrome 91+, Firefox 89+, Safari 15+)\n\n' +
+    'See SLIDESHOW_VIDEO_TROUBLESHOOTING.md for help.';
+  
+  console.error('❌ ALL FFmpeg loading attempts failed!');
+  console.error('This is most likely due to missing CORS headers on your server.');
+  console.error('Add these headers to your Nginx/Apache config:');
+  console.error('  Cross-Origin-Embedder-Policy: require-corp');
+  console.error('  Cross-Origin-Opener-Policy: same-origin');
+  
+  throw new Error(errorMsg);
 }
 
 /**
