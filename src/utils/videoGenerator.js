@@ -79,91 +79,105 @@ async function loadFFmpeg(onProgress) {
   // Check if SharedArrayBuffer is available (determines if we can use multi-threading)
   const hasSharedArrayBuffer = typeof SharedArrayBuffer !== 'undefined';
   
-  console.log('SharedArrayBuffer available:', hasSharedArrayBuffer);
-  console.log('CORS headers check: Cross-Origin-Embedder-Policy and Cross-Origin-Opener-Policy');
+  console.log('🔍 Checking environment:');
+  console.log('  - SharedArrayBuffer available:', hasSharedArrayBuffer);
+  console.log('  - WebAssembly available:', typeof WebAssembly !== 'undefined');
+  console.log('  - FFmpeg.wasm version: 0.12.15');
 
-  // Try multiple CDN configurations - prioritize single-threaded versions
+  // Try multiple loading strategies
   const loadConfigs = [
-    // Config 1: unpkg with regular core (single-threaded) - most reliable
+    // Strategy 1: Simple direct loading without toBlobURL (most compatible)
     {
-      name: 'unpkg (single-threaded)',
-      baseURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd',
+      name: 'jsdelivr (direct, single-threaded)',
+      strategy: 'direct',
+      baseURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd',
       useCore: false
     },
-    // Config 2: jsdelivr with regular core (single-threaded)
+    // Strategy 2: unpkg direct loading
     {
-      name: 'jsdelivr (single-threaded)',
-      baseURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd',
+      name: 'unpkg (direct, single-threaded)',
+      strategy: 'direct',
+      baseURL: 'https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd',
+      useCore: false
+    },
+    // Strategy 3: Try with toBlobURL
+    {
+      name: 'jsdelivr (blob, single-threaded)',
+      strategy: 'blob',
+      baseURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd',
+      useCore: false
+    },
+    // Strategy 4: unpkg with blob
+    {
+      name: 'unpkg (blob, single-threaded)',
+      strategy: 'blob',
+      baseURL: 'https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd',
       useCore: false
     }
   ];
 
-  // Only try multi-threaded versions if SharedArrayBuffer is available
+  // Add multi-threaded configs if SharedArrayBuffer is available
   if (hasSharedArrayBuffer) {
+    console.log('  ✓ Multi-threaded support available');
     loadConfigs.unshift(
       {
-        name: 'unpkg (multi-threaded)',
-        baseURL: 'https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/esm',
-        useCore: true
-      },
-      {
-        name: 'jsdelivr (multi-threaded)',
-        baseURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.6/dist/esm',
+        name: 'jsdelivr (direct, multi-threaded)',
+        strategy: 'direct',
+        baseURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.10/dist/esm',
         useCore: true
       }
     );
   } else {
-    console.warn('⚠️ SharedArrayBuffer not available. Using single-threaded version only.');
-    console.warn('For better performance, add these headers to your server:');
-    console.warn('  Cross-Origin-Embedder-Policy: require-corp');
-    console.warn('  Cross-Origin-Opener-Policy: same-origin');
+    console.warn('  ⚠️ SharedArrayBuffer not available - using single-threaded only');
   }
 
   // Try each configuration
   for (const config of loadConfigs) {
     try {
-      console.log(`\n🔄 Attempting to load FFmpeg from: ${config.name}`);
-      console.log(`📦 Base URL: ${config.baseURL}`);
+      console.log(`\n🔄 Attempting: ${config.name}`);
+      console.log(`   Strategy: ${config.strategy}`);
+      console.log(`   Base URL: ${config.baseURL}`);
       
-      // Fetch and convert to blob URLs
-      console.log('  → Fetching ffmpeg-core.js...');
-      const coreURL = await toBlobURL(`${config.baseURL}/ffmpeg-core.js`, 'text/javascript');
-      console.log('  ✓ Got ffmpeg-core.js blob URL');
+      const loadConfig = {};
       
-      console.log('  → Fetching ffmpeg-core.wasm...');
-      const wasmURL = await toBlobURL(`${config.baseURL}/ffmpeg-core.wasm`, 'application/wasm');
-      console.log('  ✓ Got ffmpeg-core.wasm blob URL');
-      
-      const loadConfig = {
-        coreURL,
-        wasmURL,
-      };
-      
-      // Add worker URL if using multi-threaded version
-      if (config.useCore) {
+      if (config.strategy === 'direct') {
+        // Direct loading without blob conversion
+        console.log('   → Using direct CDN URLs...');
+        loadConfig.coreURL = `${config.baseURL}/ffmpeg-core.js`;
+        loadConfig.wasmURL = `${config.baseURL}/ffmpeg-core.wasm`;
+        
+        if (config.useCore) {
+          loadConfig.workerURL = `${config.baseURL}/ffmpeg-core.worker.js`;
+        }
+      } else {
+        // Blob URL strategy
+        console.log('   → Converting to blob URLs...');
         try {
-          console.log('  → Fetching ffmpeg-core.worker.js...');
-          loadConfig.workerURL = await toBlobURL(`${config.baseURL}/ffmpeg-core.worker.js`, 'text/javascript');
-          console.log('  ✓ Got ffmpeg-core.worker.js blob URL');
-        } catch (e) {
-          console.warn('  ⚠ Worker not available, will use single-threaded:', e.message);
-          continue; // Skip this config if worker fails
+          loadConfig.coreURL = await toBlobURL(`${config.baseURL}/ffmpeg-core.js`, 'text/javascript');
+          loadConfig.wasmURL = await toBlobURL(`${config.baseURL}/ffmpeg-core.wasm`, 'application/wasm');
+          
+          if (config.useCore) {
+            loadConfig.workerURL = await toBlobURL(`${config.baseURL}/ffmpeg-core.worker.js`, 'text/javascript');
+          }
+          console.log('   ✓ Blob URLs created');
+        } catch (blobError) {
+          console.error('   ✗ Blob conversion failed:', blobError.message);
+          continue;
         }
       }
       
-      console.log('  → Loading FFmpeg instance...');
+      console.log('   → Loading FFmpeg...');
       await ffmpegInstance.load(loadConfig);
+      
       isFFmpegLoaded = true;
-      console.log(`\n✅ FFmpeg loaded successfully from: ${config.name}`);
-      console.log(`   Version: @ffmpeg/core@0.12.6 (${config.useCore ? 'multi-threaded' : 'single-threaded'})`);
+      console.log(`\n✅ SUCCESS! FFmpeg loaded from: ${config.name}`);
+      console.log(`   Core version: 0.12.10`);
+      console.log(`   Mode: ${config.useCore ? 'multi-threaded' : 'single-threaded'}`);
       return ffmpegInstance;
+      
     } catch (error) {
-      console.error(`\n❌ Failed to load from ${config.name}`);
-      console.error('   Error type:', error.constructor.name);
-      console.error('   Error message:', error.message || 'No message');
-      if (error.stack) {
-        console.error('   Stack trace:', error.stack.split('\n').slice(0, 3).join('\n'));
-      }
+      console.error(`\n❌ Failed: ${config.name}`);
+      console.error('   Error:', typeof error === 'string' ? error : (error.message || error.toString()));
       // Try next configuration
     }
   }

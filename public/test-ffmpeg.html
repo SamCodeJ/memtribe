@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FFmpeg Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        #log {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .success {
+            color: #10b981;
+        }
+        .error {
+            color: #ef4444;
+        }
+        .info {
+            color: #60a5fa;
+        }
+    </style>
+</head>
+<body>
+    <h1>FFmpeg.wasm Loading Test</h1>
+    <p>This test will attempt to load FFmpeg.wasm and report the results.</p>
+    
+    <button onclick="testFFmpeg()">Test FFmpeg Loading</button>
+    
+    <div id="log"></div>
+
+    <script type="module">
+        import { FFmpeg } from 'https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.15/dist/esm/index.js';
+        
+        window.testFFmpeg = async function() {
+            const log = document.getElementById('log');
+            log.innerHTML = '';
+            
+            function addLog(message, type = 'info') {
+                const line = document.createElement('div');
+                line.className = type;
+                line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                log.appendChild(line);
+                log.scrollTop = log.scrollHeight;
+            }
+            
+            addLog('Starting FFmpeg test...', 'info');
+            addLog('Browser: ' + navigator.userAgent, 'info');
+            addLog('SharedArrayBuffer: ' + (typeof SharedArrayBuffer !== 'undefined' ? 'Available' : 'NOT Available'), 'info');
+            addLog('WebAssembly: ' + (typeof WebAssembly !== 'undefined' ? 'Available' : 'NOT Available'), 'info');
+            
+            const ffmpeg = new FFmpeg();
+            
+            ffmpeg.on('log', ({ message }) => {
+                addLog('[FFmpeg] ' + message, 'info');
+            });
+            
+            // Test configurations
+            const configs = [
+                {
+                    name: 'jsdelivr direct (0.12.10)',
+                    coreURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.js',
+                    wasmURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.wasm'
+                },
+                {
+                    name: 'unpkg direct (0.12.10)',
+                    coreURL: 'https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.js',
+                    wasmURL: 'https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd/ffmpeg-core.wasm'
+                },
+                {
+                    name: 'jsdelivr direct (0.12.6)',
+                    coreURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
+                    wasmURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.wasm'
+                }
+            ];
+            
+            for (const config of configs) {
+                try {
+                    addLog(`\nTrying: ${config.name}`, 'info');
+                    addLog(`  Core: ${config.coreURL}`, 'info');
+                    addLog(`  WASM: ${config.wasmURL}`, 'info');
+                    
+                    await ffmpeg.load({
+                        coreURL: config.coreURL,
+                        wasmURL: config.wasmURL
+                    });
+                    
+                    addLog(`✅ SUCCESS with ${config.name}`, 'success');
+                    addLog('FFmpeg is loaded and ready!', 'success');
+                    return;
+                    
+                } catch (error) {
+                    addLog(`❌ Failed with ${config.name}`, 'error');
+                    addLog(`   Error: ${error.message || error.toString()}`, 'error');
+                }
+            }
+            
+            addLog('\n❌ All loading attempts failed!', 'error');
+        };
+    </script>
+</body>
+</html>
+
