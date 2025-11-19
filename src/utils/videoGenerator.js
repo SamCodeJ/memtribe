@@ -86,31 +86,31 @@ async function loadFFmpeg(onProgress) {
 
   // Try multiple loading strategies
   const loadConfigs = [
-    // Strategy 1: Simple direct loading without toBlobURL (most compatible)
+    // Strategy 1: Self-hosted files (most reliable with CORS headers)
+    {
+      name: 'self-hosted (local)',
+      strategy: 'direct',
+      baseURL: '/ffmpeg-core',
+      useCore: false
+    },
+    // Strategy 2: Self-hosted with blob conversion
+    {
+      name: 'self-hosted (blob)',
+      strategy: 'blob',
+      baseURL: '/ffmpeg-core',
+      useCore: false
+    },
+    // Strategy 3: jsdelivr direct loading (fallback)
     {
       name: 'jsdelivr (direct, single-threaded)',
       strategy: 'direct',
       baseURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd',
       useCore: false
     },
-    // Strategy 2: unpkg direct loading
+    // Strategy 4: unpkg direct loading
     {
       name: 'unpkg (direct, single-threaded)',
       strategy: 'direct',
-      baseURL: 'https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd',
-      useCore: false
-    },
-    // Strategy 3: Try with toBlobURL
-    {
-      name: 'jsdelivr (blob, single-threaded)',
-      strategy: 'blob',
-      baseURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd',
-      useCore: false
-    },
-    // Strategy 4: unpkg with blob
-    {
-      name: 'unpkg (blob, single-threaded)',
-      strategy: 'blob',
       baseURL: 'https://unpkg.com/@ffmpeg/core@0.12.10/dist/umd',
       useCore: false
     }
