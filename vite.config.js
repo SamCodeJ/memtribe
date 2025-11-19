@@ -6,7 +6,12 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   server: {
-    allowedHosts: true
+    allowedHosts: true,
+    headers: {
+      // Required for FFmpeg.wasm SharedArrayBuffer support
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Opener-Policy': 'same-origin',
+    }
   },
   build: {
     target: 'esnext', // Enable top-level await support
@@ -24,5 +29,6 @@ export default defineConfig({
         '.js': 'jsx',
       },
     },
+    exclude: ['@ffmpeg/ffmpeg', '@ffmpeg/util']
   },
 }) 

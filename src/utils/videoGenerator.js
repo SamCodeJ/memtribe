@@ -76,27 +76,21 @@ async function loadFFmpeg(onProgress) {
     }
   });
 
-  // Try multiple CDN configurations
+  // Check if SharedArrayBuffer is available (determines if we can use multi-threading)
+  const hasSharedArrayBuffer = typeof SharedArrayBuffer !== 'undefined';
+  
+  console.log('SharedArrayBuffer available:', hasSharedArrayBuffer);
+  console.log('CORS headers check: Cross-Origin-Embedder-Policy and Cross-Origin-Opener-Policy');
+
+  // Try multiple CDN configurations - prioritize single-threaded versions
   const loadConfigs = [
-    // Config 1: unpkg with core-mt (multi-threaded)
-    {
-      name: 'unpkg (multi-threaded)',
-      baseURL: 'https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/esm',
-      useCore: true
-    },
-    // Config 2: jsdelivr with core-mt
-    {
-      name: 'jsdelivr (multi-threaded)',
-      baseURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.6/dist/esm',
-      useCore: true
-    },
-    // Config 3: unpkg with regular core (fallback)
+    // Config 1: unpkg with regular core (single-threaded) - most reliable
     {
       name: 'unpkg (single-threaded)',
       baseURL: 'https://unpkg.com/@ffmpeg/core@0.12.6/dist/umd',
       useCore: false
     },
-    // Config 4: jsdelivr with regular core
+    // Config 2: jsdelivr with regular core (single-threaded)
     {
       name: 'jsdelivr (single-threaded)',
       baseURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd',
@@ -104,14 +98,41 @@ async function loadFFmpeg(onProgress) {
     }
   ];
 
+  // Only try multi-threaded versions if SharedArrayBuffer is available
+  if (hasSharedArrayBuffer) {
+    loadConfigs.unshift(
+      {
+        name: 'unpkg (multi-threaded)',
+        baseURL: 'https://unpkg.com/@ffmpeg/core-mt@0.12.6/dist/esm',
+        useCore: true
+      },
+      {
+        name: 'jsdelivr (multi-threaded)',
+        baseURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.6/dist/esm',
+        useCore: true
+      }
+    );
+  } else {
+    console.warn('⚠️ SharedArrayBuffer not available. Using single-threaded version only.');
+    console.warn('For better performance, add these headers to your server:');
+    console.warn('  Cross-Origin-Embedder-Policy: require-corp');
+    console.warn('  Cross-Origin-Opener-Policy: same-origin');
+  }
+
   // Try each configuration
   for (const config of loadConfigs) {
     try {
-      console.log(`Attempting to load FFmpeg from: ${config.name}`);
-      console.log(`URL: ${config.baseURL}`);
+      console.log(`\n🔄 Attempting to load FFmpeg from: ${config.name}`);
+      console.log(`📦 Base URL: ${config.baseURL}`);
       
+      // Fetch and convert to blob URLs
+      console.log('  → Fetching ffmpeg-core.js...');
       const coreURL = await toBlobURL(`${config.baseURL}/ffmpeg-core.js`, 'text/javascript');
+      console.log('  ✓ Got ffmpeg-core.js blob URL');
+      
+      console.log('  → Fetching ffmpeg-core.wasm...');
       const wasmURL = await toBlobURL(`${config.baseURL}/ffmpeg-core.wasm`, 'application/wasm');
+      console.log('  ✓ Got ffmpeg-core.wasm blob URL');
       
       const loadConfig = {
         coreURL,
@@ -121,39 +142,55 @@ async function loadFFmpeg(onProgress) {
       // Add worker URL if using multi-threaded version
       if (config.useCore) {
         try {
+          console.log('  → Fetching ffmpeg-core.worker.js...');
           loadConfig.workerURL = await toBlobURL(`${config.baseURL}/ffmpeg-core.worker.js`, 'text/javascript');
+          console.log('  ✓ Got ffmpeg-core.worker.js blob URL');
         } catch (e) {
-          console.warn('Worker not available, falling back to single-threaded');
+          console.warn('  ⚠ Worker not available, will use single-threaded:', e.message);
+          continue; // Skip this config if worker fails
         }
       }
       
+      console.log('  → Loading FFmpeg instance...');
       await ffmpegInstance.load(loadConfig);
       isFFmpegLoaded = true;
-      console.log(`✅ FFmpeg loaded successfully from: ${config.name}`);
+      console.log(`\n✅ FFmpeg loaded successfully from: ${config.name}`);
+      console.log(`   Version: @ffmpeg/core@0.12.6 (${config.useCore ? 'multi-threaded' : 'single-threaded'})`);
       return ffmpegInstance;
     } catch (error) {
-      console.error(`❌ Failed to load from ${config.name}:`, error);
-      console.error('Error details:', {
-        message: error.message,
-        name: error.name,
-        stack: error.stack
-      });
+      console.error(`\n❌ Failed to load from ${config.name}`);
+      console.error('   Error type:', error.constructor.name);
+      console.error('   Error message:', error.message || 'No message');
+      if (error.stack) {
+        console.error('   Stack trace:', error.stack.split('\n').slice(0, 3).join('\n'));
+      }
       // Try next configuration
     }
   }
   
   // If all configurations failed
-  const errorMsg = 'Failed to load video encoder. This usually means:\n' +
-    '1. Your server needs CORS headers (Cross-Origin-Embedder-Policy and Cross-Origin-Opener-Policy)\n' +
-    '2. Check browser console for detailed errors\n' +
-    '3. Ensure you\'re using a modern browser (Chrome 91+, Firefox 89+, Safari 15+)\n\n' +
-    'See SLIDESHOW_VIDEO_TROUBLESHOOTING.md for help.';
+  const errorMsg = 'Failed to load video encoder. This usually means:\n\n' +
+    '1. Network connectivity issue - check your internet connection\n' +
+    '2. Missing CORS headers on your server (required for multi-threading)\n' +
+    '3. Browser blocking third-party scripts\n' +
+    '4. Browser not compatible (need Chrome 91+, Firefox 89+, Safari 15+)\n\n' +
+    'SOLUTIONS:\n' +
+    '• Try refreshing the page\n' +
+    '• Check browser console for network errors\n' +
+    '• Add these headers to your server for better performance:\n' +
+    '  Cross-Origin-Embedder-Policy: require-corp\n' +
+    '  Cross-Origin-Opener-Policy: same-origin\n\n' +
+    'See SLIDESHOW_VIDEO_TROUBLESHOOTING.md for detailed help.';
   
-  console.error('❌ ALL FFmpeg loading attempts failed!');
-  console.error('This is most likely due to missing CORS headers on your server.');
-  console.error('Add these headers to your Nginx/Apache config:');
-  console.error('  Cross-Origin-Embedder-Policy: require-corp');
-  console.error('  Cross-Origin-Opener-Policy: same-origin');
+  console.error('\n❌ ALL FFmpeg loading attempts failed!');
+  console.error('\n🔧 TROUBLESHOOTING:');
+  console.error('   1. Check Network tab in DevTools for failed requests');
+  console.error('   2. Verify CORS headers are present (for multi-threading)');
+  console.error('   3. Try a different browser');
+  console.error('   4. Check if third-party scripts are blocked');
+  console.error('\n📝 For production servers, add these headers:');
+  console.error('   Cross-Origin-Embedder-Policy: require-corp');
+  console.error('   Cross-Origin-Opener-Policy: same-origin');
   
   throw new Error(errorMsg);
 }
