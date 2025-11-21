@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -20,9 +20,43 @@ import {
   Check,
   Building
 } from "lucide-react";
+import { Package, Feature, PackageFeature } from "@/api/newEntities";
 
 export default function Landing() {
   const navigate = useNavigate();
+  const [packages, setPackages] = useState([]);
+  const [features, setFeatures] = useState([]);
+  const [packageFeatures, setPackageFeatures] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch packages, features, and package features on mount
+  useEffect(() => {
+    const loadPricingData = async () => {
+      try {
+        setLoading(true);
+        const [pkgsData, featuresData, pkgFeaturesData] = await Promise.all([
+          Package.list(),
+          Feature.list(),
+          PackageFeature.list()
+        ]);
+        
+        // Filter only active packages and sort by display_order
+        const activePackages = pkgsData
+          .filter(pkg => pkg.is_active)
+          .sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+        
+        setPackages(activePackages);
+        setFeatures(featuresData);
+        setPackageFeatures(pkgFeaturesData);
+      } catch (error) {
+        console.error("Error loading pricing data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    loadPricingData();
+  }, []);
 
   const handleLogin = async () => {
     navigate('/login?redirect=' + encodeURIComponent(createPageUrl("Dashboard")));
@@ -30,6 +64,12 @@ export default function Landing() {
 
   const handleSignup = async () => {
     navigate('/signup?redirect=' + encodeURIComponent(createPageUrl("Dashboard")));
+  };
+
+  // Helper function to get feature name by feature_id
+  const getFeatureName = (featureId) => {
+    const feature = features.find(f => f.id === featureId);
+    return feature ? (feature.display_name || feature.feature_key) : 'Feature';
   };
 
   const services = [
@@ -224,99 +264,98 @@ export default function Landing() {
             </p>
           </div>
           
-          <div className="grid lg:grid-cols-4 gap-8 items-start">
-            {/* Starter Plan - FREE */}
-            <div className="bg-white/10 border border-white/20 rounded-xl p-8 flex flex-col h-full">
-              <div className="text-center mb-6">
-                <div className="text-4xl mb-2">🆓</div>
-                <h3 className="text-2xl font-bold text-white">Starter</h3>
-                <p className="text-4xl font-bold my-4 text-white">$0<span className="text-lg font-normal" style={{color: '#8B5FD9'}}>/month</span></p>
-                <p className="text-sm" style={{color: '#8B5FD9'}}>Perfect for getting started</p>
-              </div>
-              <ul className="space-y-3 flex-grow" style={{color: '#A78BE6'}}>
-                <li className="flex gap-2">✓ Up to 2 events/month</li>
-                <li className="flex gap-2">✓ 50 guests max per event</li>
-                <li className="flex gap-2">✓ 100 media uploads per event</li>
-                <li className="flex gap-2">✓ Basic QR code generation</li>
-                <li className="flex gap-2">✓ Standard slideshow display</li>
-                <li className="flex gap-2">✓ 7-day media hosting</li>
-                <li className="flex gap-2">✓ Community support</li>
-                <li className="flex gap-2" style={{color: '#8B5FD9'}}>• "Powered by MemTribe" watermark</li>
-              </ul>
-              <Button onClick={handleSignup} variant="outline" className="w-full mt-8 border-white/40 hover:bg-white/10" style={{color: '#A78BE6'}}>Get Started Free</Button>
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="text-white text-xl">Loading pricing plans...</div>
             </div>
-
-            {/* Pro Plan */}
-            <div className="bg-yellow-500/10 border-2 border-yellow-500 rounded-xl p-8 flex flex-col h-full relative -my-4">
-              <div className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2">
-                <div className="bg-yellow-500 text-white px-4 py-1 rounded-full text-sm font-semibold">Most Popular</div>
-              </div>
-              <div className="text-center mb-6">
-                <div className="text-4xl mb-2">💼</div>
-                <h3 className="text-2xl font-bold text-yellow-500">Pro</h3>
-                <p className="text-4xl font-bold my-4 text-white">$29<span className="text-lg font-normal" style={{color: '#8B5FD9'}}>/month</span></p>
-                <p className="text-sm" style={{color: '#8B5FD9'}}>Small businesses & personal events</p>
-              </div>
-              <ul className="space-y-3 flex-grow" style={{color: '#A78BE6'}}>
-                <li className="flex gap-2">✓ Up to 10 events/month</li>
-                <li className="flex gap-2">✓ 300 guests max per event</li>
-                <li className="flex gap-2">✓ 1,000 media uploads per event</li>
-                <li className="flex gap-2">✓ Custom branding/logo overlay</li>
-                <li className="flex gap-2">✓ Advanced photo filters & AI</li>
-                <li className="flex gap-2">✓ 30-day media hosting + download</li>
-                <li className="flex gap-2">✓ Live slideshow with moderation</li>
-                <li className="flex gap-2">✓ Email support</li>
-                <li className="flex gap-2">✓ Basic analytics dashboard</li>
-              </ul>
-              <Button onClick={handleSignup} className="w-full mt-8 bg-yellow-600 hover:bg-yellow-700">Choose Pro</Button>
+          ) : packages.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="text-white text-xl">No pricing plans available at the moment.</div>
             </div>
-
-            {/* Business Plan */}
-            <div className="bg-white/10 border border-white/20 rounded-xl p-8 flex flex-col h-full">
-              <div className="text-center mb-6">
-                <div className="text-4xl mb-2">🎯</div>
-                <h3 className="text-2xl font-bold text-white">Business</h3>
-                <p className="text-4xl font-bold my-4 text-white">$79<span className="text-lg font-normal" style={{color: '#8B5FD9'}}>/month</span></p>
-                <p className="text-sm" style={{color: '#8B5FD9'}}>Event planners & medium businesses</p>
-              </div>
-              <ul className="space-y-3 flex-grow" style={{color: '#A78BE6'}}>
-                <li className="flex gap-2">✓ Unlimited events</li>
-                <li className="flex gap-2">✓ 1,000 guests max per event</li>
-                <li className="flex gap-2">✓ 5,000 media uploads per event</li>
-                <li className="flex gap-2">✓ Full white-label customization</li>
-                <li className="flex gap-2">✓ Priority AI processing</li>
-                <li className="flex gap-2">✓ 90-day media hosting + backup</li>
-                <li className="flex gap-2">✓ Advanced moderation workflows</li>
-                <li className="flex gap-2">✓ Real-time analytics & reporting</li>
-                <li className="flex gap-2">✓ Ticketing + payment processing</li>
-                <li className="flex gap-2">✓ Priority email + chat support</li>
-              </ul>
-              <Button onClick={handleSignup} variant="outline" className="w-full mt-8 border-white/40 hover:bg-white/10" style={{color: '#A78BE6'}}>Choose Business</Button>
+          ) : (
+            <div className={`grid gap-8 items-start ${packages.length === 1 ? 'lg:grid-cols-1 max-w-md mx-auto' : packages.length === 2 ? 'lg:grid-cols-2 max-w-4xl mx-auto' : packages.length === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-4'}`}>
+              {packages.map((pkg) => {
+                // Get features for this package
+                const pkgFeatures = packageFeatures.filter(pf => pf.package_id === pkg.id);
+                const isPopular = pkg.is_popular;
+                const isFree = pkg.monthly_price === 0;
+                
+                return (
+                  <div 
+                    key={pkg.id}
+                    className={`rounded-xl p-8 flex flex-col h-full relative ${
+                      isPopular 
+                        ? 'bg-yellow-500/10 border-2 border-yellow-500 -my-4' 
+                        : 'bg-white/10 border border-white/20'
+                    }`}
+                  >
+                    {isPopular && (
+                      <div className="absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2">
+                        <div className="bg-yellow-500 text-white px-4 py-1 rounded-full text-sm font-semibold">Most Popular</div>
+                      </div>
+                    )}
+                    
+                    <div className="text-center mb-6">
+                      <h3 className={`text-2xl font-bold ${isPopular ? 'text-yellow-500' : 'text-white'}`}>
+                        {pkg.package_name}
+                      </h3>
+                      <p className="text-4xl font-bold my-4 text-white">
+                        ${pkg.monthly_price}
+                        <span className="text-lg font-normal" style={{color: '#8B5FD9'}}>/month</span>
+                      </p>
+                      {pkg.description && (
+                        <p className="text-sm" style={{color: '#8B5FD9'}}>{pkg.description}</p>
+                      )}
+                    </div>
+                    
+                    <ul className="space-y-3 flex-grow" style={{color: '#A78BE6'}}>
+                      {pkgFeatures.length > 0 ? (
+                        pkgFeatures.map(pf => (
+                          <li key={pf.id} className="flex gap-2">
+                            <Check className="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
+                            <span>
+                              {getFeatureName(pf.feature_id)}: {pf.is_unlimited ? 'Unlimited' : pf.feature_value}
+                            </span>
+                          </li>
+                        ))
+                      ) : (
+                        <li className="flex gap-2">
+                          <span>Contact us for details</span>
+                        </li>
+                      )}
+                    </ul>
+                    
+                    {isFree ? (
+                      <Button 
+                        onClick={handleSignup} 
+                        variant="outline" 
+                        className="w-full mt-8 border-white/40 hover:bg-white/10" 
+                        style={{color: '#A78BE6'}}
+                      >
+                        Get Started Free
+                      </Button>
+                    ) : isPopular ? (
+                      <Button 
+                        onClick={handleSignup} 
+                        className="w-full mt-8 bg-yellow-600 hover:bg-yellow-700"
+                      >
+                        Choose {pkg.package_name}
+                      </Button>
+                    ) : (
+                      <Button 
+                        onClick={handleSignup} 
+                        variant="outline" 
+                        className="w-full mt-8 border-white/40 hover:bg-white/10" 
+                        style={{color: '#A78BE6'}}
+                      >
+                        Choose {pkg.package_name}
+                      </Button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-
-            {/* Enterprise Plan */}
-            <div className="bg-white/10 border border-white/20 rounded-xl p-8 flex flex-col h-full">
-              <div className="text-center mb-6">
-                <div className="text-4xl mb-2">🏢</div>
-                <h3 className="text-2xl font-bold text-white">Enterprise</h3>
-                <p className="text-4xl font-bold my-4 text-white">$199<span className="text-lg font-normal" style={{color: '#8B5FD9'}}>/month</span></p>
-                <p className="text-sm" style={{color: '#8B5FD9'}}>Large corporations & agencies</p>
-              </div>
-              <ul className="space-y-3 flex-grow" style={{color: '#A78BE6'}}>
-                <li className="flex gap-2">✓ Everything in Business, plus:</li>
-                <li className="flex gap-2">✓ Unlimited guests & uploads</li>
-                <li className="flex gap-2">✓ 12-month media hosting + archive</li>
-                <li className="flex gap-2">✓ Advanced API access</li>
-                <li className="flex gap-2">✓ Multi-user dashboard with roles</li>
-                <li className="flex gap-2">✓ Custom integrations</li>
-                <li className="flex gap-2">✓ Dedicated account manager</li>
-                <li className="flex gap-2">✓ Phone support + SLA</li>
-                <li className="flex gap-2">✓ Custom reporting & exports</li>
-                <li className="flex gap-2">✓ Enterprise security features</li>
-              </ul>
-              <Button onClick={handleSignup} variant="outline" className="w-full mt-8 border-white/40 hover:bg-white/10" style={{color: '#A78BE6'}}>Contact Sales</Button>
-            </div>
-          </div>
+          )}
         </div>
       </section>
 
