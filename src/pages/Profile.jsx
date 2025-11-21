@@ -144,13 +144,13 @@ export default function Profile() {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-        <p className="text-gray-600 mt-2">Manage your account settings and password</p>
+    <div className="container mx-auto p-4 sm:p-6 max-w-4xl">
+      <div className="mb-4 sm:mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">My Profile</h1>
+        <p className="text-sm sm:text-base text-gray-600 mt-2">Manage your account settings and password</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-1">
+      <div className="grid gap-4 sm:gap-6 md:grid-cols-1">
         {/* Account Information Card */}
         <Card>
           <CardHeader>

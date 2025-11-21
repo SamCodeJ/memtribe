@@ -114,31 +114,31 @@ export default function Landing() {
   return (
     <div className="min-h-screen text-white" style={{backgroundColor: '#442873'}}>
       {/* Navigation */}
-      <nav className="sticky top-0 w-full z-50 px-6 py-4 backdrop-blur-lg border-b border-white/10" style={{backgroundColor: 'rgba(68, 40, 115, 0.8)'}}>
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <a href="#" className="flex items-center gap-3">
-            <img src="/logo.png" alt="MemTribe Logo" className="w-10 h-10 object-contain" />
-            <span className="text-2xl font-bold">MemTribe</span>
+      <nav className="sticky top-0 w-full z-50 px-3 sm:px-6 py-3 sm:py-4 backdrop-blur-lg border-b border-white/10" style={{backgroundColor: 'rgba(68, 40, 115, 0.8)'}}>
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-2">
+          <a href="#" className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+            <img src="/logo.png" alt="MemTribe Logo" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
+            <span className="text-lg sm:text-2xl font-bold">MemTribe</span>
           </a>
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-8">
             {navLinks.map(link => (
-              <a key={link.name} href={link.href} onClick={handleNavClick} className="hover:text-yellow-500 transition-colors" style={{color: '#A78BE6'}}>
+              <a key={link.name} href={link.href} onClick={handleNavClick} className="hover:text-yellow-500 transition-colors whitespace-nowrap" style={{color: '#A78BE6'}}>
                 {link.name}
               </a>
             ))}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Button 
               onClick={handleLogin}
               variant="outline"
-              className="border-white/40 hover:bg-white/10 backdrop-blur-sm font-semibold px-6 py-2"
+              className="border-white/40 hover:bg-white/10 backdrop-blur-sm font-semibold px-3 sm:px-6 py-1.5 sm:py-2 text-sm sm:text-base"
               style={{color: '#A78BE6'}}
             >
               Sign In
             </Button>
             <Button 
               onClick={handleSignup}
-              className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold px-6 py-2"
+              className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold px-3 sm:px-6 py-1.5 sm:py-2 text-sm sm:text-base"
             >
               Sign Up
             </Button>
@@ -147,40 +147,40 @@ export default function Landing() {
       </nav>
 
       {/* Hero Section */}
-      <section id="home" className="relative overflow-hidden pt-32 pb-20">
+      <section id="home" className="relative overflow-hidden pt-20 sm:pt-32 pb-12 sm:pb-20 px-4">
         <div className="absolute inset-0 bg-gradient-to-r from-yellow-600/20 to-yellow-400/20 opacity-30"></div>
-        <div className="relative max-w-7xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-8">
-            <Star className="w-4 h-4 text-yellow-500" />
-            <span className="text-yellow-100 text-sm font-medium">Premium Event Management</span>
+        <div className="relative max-w-7xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-3 sm:px-4 py-1.5 sm:py-2 mb-6 sm:mb-8">
+            <Star className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" />
+            <span className="text-yellow-100 text-xs sm:text-sm font-medium">Premium Event Management</span>
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+          <h1 className="text-3xl sm:text-5xl md:text-7xl font-bold text-white mb-4 sm:mb-6 leading-tight px-2">
             Create Unforgettable
             <span className="block bg-gradient-to-r from-yellow-400 to-yellow-600 bg-clip-text text-transparent">
               Event Experiences
             </span>
           </h1>
           
-          <p className="text-xl mb-10 max-w-3xl mx-auto leading-relaxed" style={{color: '#A78BE6'}}>
+          <p className="text-base sm:text-xl mb-8 sm:mb-10 max-w-3xl mx-auto leading-relaxed px-4" style={{color: '#A78BE6'}}>
             Transform your events with our luxury platform featuring smart QR codes, 
             seamless guest management, and premium media sharing capabilities.
           </p>
           
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center px-4">
             <Button 
               onClick={handleSignup}
               size="lg"
-              className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold px-8 py-4 text-lg"
+              className="bg-yellow-600 hover:bg-yellow-700 text-white font-semibold px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg"
             >
               Start Creating Events
-              <ArrowRight className="w-5 h-5 ml-2" />
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
             </Button>
             <Button 
               onClick={handleLogin}
               variant="outline" 
               size="lg"
-              className="border-white/40 hover:bg-white/10 backdrop-blur-sm px-8 py-4 text-lg"
+              className="border-white/40 hover:bg-white/10 backdrop-blur-sm px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg"
               style={{color: '#A78BE6'}}
             >
               Sign In
@@ -190,9 +190,9 @@ export default function Landing() {
       </section>
       
       {/* About Us Section */}
-      <section id="about" className="py-24">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
+      <section id="about" className="py-12 sm:py-24">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid md:grid-cols-2 gap-8 sm:gap-12 items-center">
             <div className="space-y-6">
               <h2 className="text-4xl font-bold text-white mb-4">About MemTribe</h2>
               <p className="text-lg" style={{color: '#A78BE6'}}>
@@ -223,18 +223,18 @@ export default function Landing() {
       </section>
 
       {/* Services Section */}
-      <section id="services" className="py-24 bg-white/5 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">
+      <section id="services" className="py-12 sm:py-24 bg-white/5 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3 sm:mb-4 px-4">
               Everything You Need for Perfect Events
             </h2>
-            <p className="text-xl max-w-2xl mx-auto" style={{color: '#A78BE6'}}>
+            <p className="text-base sm:text-xl max-w-2xl mx-auto px-4" style={{color: '#A78BE6'}}>
               From creation to completion, MemTribe provides all the tools for exceptional event management
             </p>
           </div>
           
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
             {services.map((service, index) => (
               <Card key={index} className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/15 transition-all duration-300">
                 <CardContent className="p-6 text-center">
@@ -255,11 +255,11 @@ export default function Landing() {
       </section>
       
       {/* Pricing Section */}
-      <section id="pricing" className="py-24 bg-white/5 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-white mb-4">Flexible Pricing for Every Occasion</h2>
-            <p className="text-xl max-w-3xl mx-auto" style={{color: '#A78BE6'}}>
+      <section id="pricing" className="py-12 sm:py-24 bg-white/5 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-10 sm:mb-16">
+            <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3 sm:mb-4 px-4">Flexible Pricing for Every Occasion</h2>
+            <p className="text-base sm:text-xl max-w-3xl mx-auto px-4" style={{color: '#A78BE6'}}>
               Choose the perfect plan to create, manage, and share your unforgettable events.
             </p>
           </div>
@@ -273,7 +273,7 @@ export default function Landing() {
               <div className="text-white text-xl">No pricing plans available at the moment.</div>
             </div>
           ) : (
-            <div className={`grid gap-8 items-start ${packages.length === 1 ? 'lg:grid-cols-1 max-w-md mx-auto' : packages.length === 2 ? 'lg:grid-cols-2 max-w-4xl mx-auto' : packages.length === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-4'}`}>
+            <div className={`grid gap-6 sm:gap-8 items-start ${packages.length === 1 ? 'lg:grid-cols-1 max-w-md mx-auto' : packages.length === 2 ? 'md:grid-cols-2 max-w-4xl mx-auto' : packages.length === 3 ? 'md:grid-cols-2 lg:grid-cols-3' : 'md:grid-cols-2 lg:grid-cols-4'}`}>
               {packages.map((pkg) => {
                 // Get features for this package
                 const pkgFeatures = packageFeatures.filter(pf => pf.package_id === pkg.id);
@@ -360,11 +360,11 @@ export default function Landing() {
       </section>
 
       {/* Contact Us Section */}
-      <section id="contact" className="py-24">
-        <div className="max-w-3xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold text-white mb-4">Get In Touch</h2>
-            <p className="text-xl" style={{color: '#A78BE6'}}>Have questions? We'd love to hear from you.</p>
+      <section id="contact" className="py-12 sm:py-24">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-8 sm:mb-12">
+            <h2 className="text-2xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">Get In Touch</h2>
+            <p className="text-base sm:text-xl" style={{color: '#A78BE6'}}>Have questions? We'd love to hear from you.</p>
           </div>
           <Card className="bg-white/10 border-white/20">
             <CardContent className="p-8 space-y-6">
@@ -389,21 +389,21 @@ export default function Landing() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-24">
-        <div className="max-w-4xl mx-auto px-6 text-center">
-          <h2 className="text-4xl font-bold text-white mb-6">
+      <section className="py-12 sm:py-24">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+          <h2 className="text-2xl sm:text-4xl font-bold text-white mb-4 sm:mb-6">
             Ready to Create Amazing Events?
           </h2>
-          <p className="text-xl mb-10" style={{color: '#A78BE6'}}>
+          <p className="text-base sm:text-xl mb-8 sm:mb-10" style={{color: '#A78BE6'}}>
             Join thousands of event organizers who trust MemTribe for their most important gatherings
           </p>
           <Button 
             onClick={handleSignup}
             size="lg"
-            className="bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-white font-semibold px-10 py-4 text-lg"
+            className="bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-700 hover:to-yellow-600 text-white font-semibold px-8 sm:px-10 py-3 sm:py-4 text-base sm:text-lg"
           >
             Get Started Free
-            <ArrowRight className="w-5 h-5 ml-2" />
+            <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2" />
           </Button>
         </div>
       </section>
