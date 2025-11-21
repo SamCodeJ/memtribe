@@ -213,12 +213,60 @@ export const refreshToken = asyncHandler(async (req, res) => {
  * Update current user
  */
 export const updateCurrentUser = asyncHandler(async (req, res) => {
-  const { full_name, subscription_plan } = req.body;
+  const { full_name, subscription_plan, current_password, new_password } = req.body;
 
   // Build update data
   const updateData = {};
   if (full_name !== undefined) updateData.full_name = full_name;
   if (subscription_plan !== undefined) updateData.subscription_plan = subscription_plan;
+
+  // Handle password change
+  if (new_password) {
+    if (!current_password) {
+      return res.status(400).json({ error: 'Current password is required to change password' });
+    }
+
+    // Get user with password
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id }
+    });
+
+    // Verify current password
+    const isValidPassword = await bcrypt.compare(current_password, user.password);
+    if (!isValidPassword) {
+      await LoggerService.warning(
+        'password_change_failed',
+        `Failed password change attempt - incorrect current password for: ${user.email}`,
+        {
+          user_id: user.id,
+          user_email: user.email,
+          ip_address: req.ip,
+          user_agent: req.get('user-agent')
+        }
+      );
+      return res.status(400).json({ error: 'Current password is incorrect' });
+    }
+
+    // Validate new password
+    if (new_password.length < 6) {
+      return res.status(400).json({ error: 'New password must be at least 6 characters' });
+    }
+
+    // Hash new password
+    updateData.password = await bcrypt.hash(new_password, 10);
+
+    // Log password change
+    await LoggerService.success(
+      'password_changed',
+      `Password changed for user: ${user.email}`,
+      {
+        user_id: user.id,
+        user_email: user.email,
+        ip_address: req.ip,
+        user_agent: req.get('user-agent')
+      }
+    );
+  }
 
   // Update user
   const updatedUser = await prisma.user.update({

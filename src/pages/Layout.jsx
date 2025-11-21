@@ -19,7 +19,8 @@ import {
   DollarSign,
   FileText,
   UserCog,
-  TrendingUp
+  TrendingUp,
+  UserCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -133,6 +134,12 @@ export default function Layout({ children, currentPageName }) {
   ];
 
   const accountMenuItems = [
+    {
+      title: "My Profile",
+      url: createPageUrl("Profile"),
+      icon: UserCircle,
+      description: "Update your profile"
+    },
     {
       title: "Subscription",
       url: createPageUrl("Subscription"),
@@ -281,7 +288,7 @@ export default function Layout({ children, currentPageName }) {
 
             <SidebarGroup className="mt-8">
               <SidebarGroupLabel className="text-xs font-semibold text-slate-600 uppercase tracking-wider px-3 py-2">
-                Billing
+                Account & Billing
               </SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu>
